@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔞📜 Grimório do Personagem – RPG</title>
+    <title>📜 Grimório do Personagem – RPG</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <style>
         :root {
             --bg: #0a0e27; --panel: #1a2456; --panel2: #151c42; --tab-active: #3d1f5c;
@@ -411,7 +412,7 @@
 
     <div class="stage active" id="stageAge">
         <div class="card">
-            <div class="icon">🔞</div>
+            <div class="icon"></div>
             <h2>Verificação de Idade</h2>
             <p class="subtitle">— Conteúdo restrito para maiores de 10 anos —</p>
             <div class="warning-box">
@@ -481,8 +482,9 @@
                 <button class="btn-action primary" onclick="triggerUpload()">📷 Adicionar Imagem</button>
                 <button class="btn-action save" onclick="saveCurrentCharacter()">💾 Salvar</button>
                 <button class="btn-action" onclick="clearCurrentCategory()">🧹 Limpar Aba</button>
-                <button class="btn-action export" onclick="exportAll()">📤 Exportar</button>
-                <button class="btn-action" onclick="triggerImport()">📥 Importar</button>
+                <button class="btn-action export" onclick="exportAll()">📤 Exportar JSON</button>
+                <button class="btn-action" onclick="triggerImport()">📥 Importar JSON</button>
+                <button class="btn-action" onclick="baixarPDF()" style="background:#4a148c;color:#d4af37;border:2px solid #d4af37;">📜 Baixar PDF</button>
                 <span class="save-status" id="saveStatus">✅ Tudo salvo</span>
             </div>
             <input type="file" id="hiddenFileInput" accept="image/*" multiple style="display:none" onchange="handleFileSelect(event)">
@@ -819,7 +821,7 @@
                 <div class="section-title">⚔️ Status de Combate</div>
                 <div class="combat-grid">
                     <div class="combat-slot hp-slot"><div class="c-icon">❤️</div><div class="c-label">Pontos de Vida</div><div class="hp-display" id="hpDisplay">${hpCur}/${hpMax}</div><div class="hp-bar-container"><div class="hp-bar-bg"><div class="hp-bar-fill" id="hpBarFill" style="width:${pct}%"></div></div></div><div style="display:flex;gap:4px;margin-top:6px;"><input type="text" id="sc_hpCur" placeholder="Atual" value="${sc.hpCur||''}" oninput="updSheetField('combat','hpCur',this.value);updHPDisplay()"><input type="text" id="sc_hpMax" placeholder="Máx" value="${sc.hpMax||''}" oninput="updSheetField('combat','hpMax',this.value);updHPDisplay()"><input type="text" id="sc_hpTemp" placeholder="Temp" value="${sc.hpTemp||''}" oninput="updSheetField('combat','hpTemp',this.value)"></div></div>
-                    ${[{id:'ca',icon:'️',l:'CA'},{id:'iniciativa',icon:'⚡',l:'Iniciativa'},{id:'desloc',icon:'',l:'Deslocamento'},{id:'nivel',icon:'⭐',l:'Nível'},{id:'xp',icon:'✨',l:'XP'},{id:'prof',icon:'🧮',l:'Proficiência'},{id:'deathSaves',icon:'💀',l:'Testes Morte'}].map(x=>`<div class="combat-slot"><div class="c-icon">${x.icon}</div><div class="c-label">${x.l}</div><input type="text" id="sc_${x.id}" value="${sc[x.id]||''}" placeholder="${x.id==='ca'?'10':x.id==='prof'?'+2':'...'}" oninput="updSheetField('combat','${x.id}',this.value)${x.id==='prof'?';refreshSkillsPanel()':''}"></div>`).join('')}
+                    ${[{id:'ca',icon:'🛡️',l:'CA'},{id:'iniciativa',icon:'⚡',l:'Iniciativa'},{id:'desloc',icon:'🏃',l:'Deslocamento'},{id:'nivel',icon:'⭐',l:'Nível'},{id:'xp',icon:'✨',l:'XP'},{id:'prof',icon:'🧮',l:'Proficiência'},{id:'deathSaves',icon:'💀',l:'Testes Morte'}].map(x=>`<div class="combat-slot"><div class="c-icon">${x.icon}</div><div class="c-label">${x.l}</div><input type="text" id="sc_${x.id}" value="${sc[x.id]||''}" placeholder="${x.id==='ca'?'10':x.id==='prof'?'+2':'...'}" oninput="updSheetField('combat','${x.id}',this.value)${x.id==='prof'?';refreshSkillsPanel()':''}"></div>`).join('')}
                 </div>
             </div>`;
         }
@@ -827,7 +829,7 @@
         function renderFichaPanel(){
             const ch=getCurrentChar();const s=getSheet();
             const infoHTML=`<div class="section-title">📜 Informações Básicas</div><div class="info-grid">
-                ${[{id:'nome',l:'👤 Nome',p:'Nome do personagem'},{id:'classe',l:'⚔️ Classe',p:'Guerreiro, Mago...'},{id:'raca',l:' Raça',p:'Humano, Elfo...'},{id:'antecedente',l:' Antecedente',p:'Nobre, Soldado...'},{id:'alinhamento',l:'️ Alinhamento',p:'Leal e Bom...'},{id:'jogador',l:' Jogador',p:'Seu nome'}].map(f=>`<div class="info-field"><label>${f.l}</label><input type="text" id="sf_${f.id}" value="${(ch.ficha[f.id]||'').replace(/"/g,'&quot;')}" placeholder="${f.p}" oninput="updSheetField('info','${f.id}',this.value)"></div>`).join('')}
+                ${[{id:'nome',l:'👤 Nome',p:'Nome do personagem'},{id:'classe',l:'⚔️ Classe',p:'Guerreiro, Mago...'},{id:'raca',l:'🧝 Raça',p:'Humano, Elfo...'},{id:'antecedente',l:'📖 Antecedente',p:'Nobre, Soldado...'},{id:'alinhamento',l:'⚖️ Alinhamento',p:'Leal e Bom...'},{id:'jogador',l:'🎭 Jogador',p:'Seu nome'}].map(f=>`<div class="info-field"><label>${f.l}</label><input type="text" id="sf_${f.id}" value="${(ch.ficha[f.id]||'').replace(/"/g,'&quot;')}" placeholder="${f.p}" oninput="updSheetField('info','${f.id}',this.value)"></div>`).join('')}
             </div>`;
             const attacksHTML=`<details><summary>⚔️ Ataques & Ações</summary><div class="details-content"><div id="attacksArea">${(s.attacks||[]).map((a,i)=>`<div class="list-item"><input type="text" placeholder="Nome do ataque" value="${a.name||''}" oninput="updSheetNested('attacks',${i},'name',this.value)"><div style="display:flex;gap:4px;align-items:center;"><input type="text" class="mini-input" placeholder="Bônus" value="${a.bonus||''}" oninput="updSheetNested('attacks',${i},'bonus',this.value)"><input type="text" class="mini-input" placeholder="Dano" value="${a.dmg||''}" oninput="updSheetNested('attacks',${i},'dmg',this.value)"><button class="btn-mini" onclick="rmSheetItem('attacks',${i})">✕</button></div></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('attacks')">+ Adicionar Ataque</button></div></details>`;
             const spellsHTML=`<details><summary>🔮 Magias</summary><div class="details-content"><div class="slots-grid">${SLOT_LEVELS.map(l=>`<div class="slot-box"><div class="slot-level">${l} Nível</div><input type="text" placeholder="x/x" value="${s.slots[l]||''}" oninput="updSheetSlot('${l}',this.value)"></div>`).join('')}</div><hr class="divider"><div id="spellsArea">${(s.spells||[]).map((sp,i)=>`<div class="list-item"><input type="text" placeholder="Nome da magia" value="${sp||''}" oninput="updSheetArr('spells',${i},this.value)"><button class="btn-mini" onclick="rmSheetItem('spells',${i})">✕</button></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('spells')">+ Adicionar Magia</button></div></details>`;
@@ -853,7 +855,7 @@
                 </div>
                 <button class="dice-roll-btn" id="diceRollBtn" onclick="rollDice()">🎲 Rolar D${diceState.selectedType}</button>
                 <div class="dice-result" id="diceResult"><div class="dice-result-placeholder">Clique em "Rolar" para lançar os dados</div></div>
-                <div class="dice-history"><div class="dice-history-title"><span> Histórico</span><button class="dice-history-clear" onclick="clearDiceHistory()">Limpar</button></div><div class="dice-history-list" id="diceHistoryList"><div class="dice-history-empty">Nenhuma rolagem ainda</div></div></div>
+                <div class="dice-history"><div class="dice-history-title"><span>📜 Histórico</span><button class="dice-history-clear" onclick="clearDiceHistory()">Limpar</button></div><div class="dice-history-list" id="diceHistoryList"><div class="dice-history-empty">Nenhuma rolagem ainda</div></div></div>
             </div>`;
         }
 
@@ -1336,7 +1338,7 @@
         async function switchCharacter(charId){if(!appData.characters[charId])return;stopMusic();activeCharId=charId;appData.activeId=charId;await saveGrimoireData(appData);activeTab='atributos';loadMusicState();renderAllGrimoire();}
         async function openNewCharModal(){showPrompt('➕ Novo Personagem','Nome do personagem:','Novo Personagem',async name=>{if(!name||!name.trim())return;const id='char_'+Date.now();appData.characters[id]=createEmptyCharacter(name.trim());activeCharId=id;appData.activeId=id;await saveGrimoireData(appData);activeTab='atributos';renderAllGrimoire();showToast('✅ Personagem criado!');});}
         async function renameCharacter(){const ch=getCurrentChar();showPrompt('✏️ Renomear','Novo nome:',ch.name,async name=>{if(!name||!name.trim())return;ch.name=name.trim();await saveGrimoireData(appData);renderCharSelector();showToast('✅ Renomeado!');});}
-        async function deleteCharacter(){if(Object.keys(appData.characters).length<=1){showToast('⚠️ Deve haver pelo menos 1 personagem!');return;}showConfirm(`Excluir "${getCurrentChar().name}"?`,async()=>{delete appData.characters[activeCharId];activeCharId=Object.keys(appData.characters)[0];appData.activeId=activeCharId;await saveGrimoireData(appData);activeTab='atributos';renderAllGrimoire();showToast('️ Excluído');});}
+        async function deleteCharacter(){if(Object.keys(appData.characters).length<=1){showToast('⚠️ Deve haver pelo menos 1 personagem!');return;}showConfirm(`Excluir "${getCurrentChar().name}"?`,async()=>{delete appData.characters[activeCharId];activeCharId=Object.keys(appData.characters)[0];appData.activeId=activeCharId;await saveGrimoireData(appData);activeTab='atributos';renderAllGrimoire();showToast('🗑️ Excluído');});}
         function exportAll(){const ch=getCurrentChar();const blob=new Blob([JSON.stringify({version:5,character:ch,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`grimorio-${(ch.name||'personagem').replace(/[^a-zA-Z0-9]/g,'_')}-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(url);showToast('📤 Exportado!');}
         function triggerImport(){showConfirm('Importar substituirá o personagem atual.',()=>document.getElementById('hiddenImportInput').click());}
         async function handleImport(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{try{const imp=JSON.parse(r.result),cd=imp.character||imp;if(!cd.name)throw new Error('Inválido');if(!cd.ficha)cd.ficha={};if(!cd.notes)cd.notes={};if(!cd.images)cd.images={};if(!cd.messages)cd.messages={};if(!cd.music)cd.music={playlist:[],volume:0.7};if(!cd.sheet)cd.sheet=initSheet();CATEGORIES.forEach(c=>{if(!cd.images[c.id])cd.images[c.id]=[];if(!cd.messages[c.id])cd.messages[c.id]=[];});const id='char_'+Date.now();appData.characters[id]=cd;activeCharId=id;appData.activeId=id;await saveGrimoireData(appData);activeTab='atributos';renderAllGrimoire();showToast('📥 Importado!');}catch{alert('❌ Arquivo inválido!');}};r.readAsText(f);e.target.value='';}
@@ -1367,6 +1369,78 @@
         function clearDiceHistory(){diceState.history=[];renderDiceHistory();showToast('🧹 Histórico limpo!');}
         document.addEventListener('keydown',e=>{if(e.code==='Space'&&activeTab==='dados'&&!e.target.matches('input,textarea,select,button')){e.preventDefault();rollDice();}});
 
+        // ═══════════════════════════════════════════════════════════
+        // 📜 BAIXAR PDF DA FICHA DO PERSONAGEM
+        // ═══════════════════════════════════════════════════════════
+        async function baixarPDF(){
+            const { PDFDocument, rgb } = PDFLib;
+            const pdf = await PDFDocument.create();
+            const A4 = [595, 842];
+            const ch = getCurrentChar();
+            const s = getSheet();
+            const f = ch.ficha || {};
+
+            function valor(campo, padrao){ return (campo || padrao || ''); }
+
+            const nome = valor(f.nome || ch.name, 'Sem Nome');
+            const classe = valor(f.classe, '');
+            const raca = valor(f.raca, '');
+            const nivel = valor(s.combat.nivel, '');
+            const xp = valor(s.combat.xp, '');
+            const hp = valor(s.combat.hpCur, '') + '/' + valor(s.combat.hpMax, '');
+            const ca = valor(s.combat.ca, '');
+            const inic = valor(s.combat.iniciativa, '');
+            const desloc = valor(s.combat.desloc, '');
+            const prof = valor(s.combat.prof, '');
+
+            // 🎴 CAPA
+            let page = pdf.addPage(A4);
+            page.drawRectangle({ x: 0, y: 0, width: 595, height: 842, color: rgb(0.06, 0.04, 0.10) });
+            page.drawRectangle({ x: 25, y: 25, width: 545, height: 792, borderColor: rgb(0.75, 0.60, 0.22), borderWidth: 3 });
+            page.drawText('GRIMÓRIO ARCANO', { x: 140, y: 650, size: 32, color: rgb(0.88, 0.72, 0.28) });
+            page.drawText(`Personagem: ${nome}`, { x: 80, y: 540, size: 16, color: rgb(0.82, 0.78, 0.62) });
+            page.drawText(`Classe: ${classe}  |  Raça: ${raca}`, { x: 80, y: 510, size: 13, color: rgb(0.65, 0.60, 0.50) });
+            page.drawText(`Nível: ${nivel}  |  XP: ${xp}`, { x: 80, y: 485, size: 13, color: rgb(0.65, 0.60, 0.50) });
+            page.drawText(`HP: ${hp}  |  CA: ${ca}  |  Iniciativa: ${inic}`, { x: 80, y: 455, size: 13, color: rgb(0.65, 0.60, 0.50) });
+            page.drawText(`Geração: ${new Date().toLocaleDateString('pt-BR')}`, { x: 80, y: 425, size: 12, color: rgb(0.50, 0.45, 0.38) });
+
+            // 📊 ATRIBUTOS
+            let yPos = 360;
+            page.drawText('ATRIBUTOS', { x: 80, y: yPos + 10, size: 16, color: rgb(0.88, 0.72, 0.28) });
+            yPos -= 10;
+            ATTRS.forEach(a => {
+                const v = s.attrs[a.id] || a.def;
+                const m = mod(v);
+                const ms = m !== null ? (m >= 0 ? '+' + m : '' + m) : '—';
+                page.drawText(`${a.name}: ${v} (${ms})`, { x: 80, y: yPos, size: 12, color: rgb(0.78, 0.72, 0.58) });
+                yPos -= 18;
+            });
+
+            // 📝 NOTAS DA FICHA
+            const notas = s.notes || '';
+            if (notas.trim()) {
+                page = pdf.addPage(A4);
+                page.drawText('NOTAS DA CAMPANHA', { x: 45, y: 790, size: 18, color: rgb(0.88, 0.72, 0.28) });
+                let y = 750;
+                notas.split('\n').forEach(l => {
+                    if (y < 60) { page = pdf.addPage(A4); y = 790; }
+                    page.drawText(l || ' ', { x: 55, y, size: 10, color: rgb(0.68, 0.62, 0.52) });
+                    y -= 14;
+                });
+            }
+
+            // ⬇️ DOWNLOAD
+            const bytes = await pdf.save();
+            const blob = new Blob([bytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Ficha_${nome.replace(/\s+/g, '_')}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('📜 PDF baixado!');
+        }
+
         // ═══════════ INIT ══════════
         setupAgeGate();
         (async()=>{
@@ -1391,5 +1465,6 @@
         })();
         window.addEventListener('beforeunload',e=>{if(hasUnsavedChanges){e.preventDefault();e.returnValue='';}});
     </script>
+
 </body>
 </html>
