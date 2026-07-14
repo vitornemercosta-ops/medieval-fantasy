@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🔞📜 Grimório do Personagem – RPG</title>
+    <!-- CDN html2pdf.js para exportação PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --bg: #0a0e27; --panel: #1a2456; --panel2: #151c42; --tab-active: #3d1f5c;
@@ -305,10 +307,42 @@
         .btn-action.save{background:#2a7a5c;border-color:#2a7a5c;color:#fff;}
         .btn-action.save:hover{background:#35996f;box-shadow:0 0 20px rgba(53,153,111,0.4);}
         .btn-action.export{background:#2a3a6a;border-color:#3a4a8a;}
+        .btn-action.pdf{background:#8b1a1a;border-color:#b52a2a;color:#fff;}
+        .btn-action.pdf:hover{background:#a52a2a;box-shadow:0 0 20px rgba(200,40,40,0.4);}
         .save-status{margin-left:auto;color:var(--text-muted);font-size:clamp(0.68rem,1.2vw,0.75rem);font-style:italic;}
         .save-status.saved{color:var(--green);}
         .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,#35996f,#2a7a5c);color:#fff;padding:clamp(10px,2vw,14px) clamp(16px,3vw,28px);border-radius:8px;font-weight:600;letter-spacing:1px;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:300;transition:transform 0.4s ease;pointer-events:none;border:1px solid var(--green);font-size:clamp(0.78rem,1.5vw,0.9rem);max-width:90vw;text-align:center;}
         .toast.show{transform:translateX(-50%) translateY(0);}
+
+        /* ═══════ CONTAINER OCULTO PARA PDF ═══════ */
+        #pdfExportContainer{position:absolute;left:-9999px;top:0;width:800px;background:#fff;color:#111;font-family:'Segoe UI',Arial,sans-serif;font-size:13px;line-height:1.5;padding:30px;z-index:-1;}
+        #pdfExportContainer *{color:#111 !important;text-shadow:none !important;box-shadow:none !important;}
+        #pdfExportContainer .pdf-header{text-align:center;border-bottom:3px double #333;padding-bottom:15px;margin-bottom:20px;}
+        #pdfExportContainer .pdf-header h1{font-size:26px;letter-spacing:3px;text-transform:uppercase;margin:0;color:#2a1540 !important;}
+        #pdfExportContainer .pdf-header .pdf-subtitle{font-size:12px;color:#666 !important;margin-top:4px;}
+        #pdfExportContainer .pdf-section{margin-bottom:20px;page-break-inside:avoid;}
+        #pdfExportContainer .pdf-section h2{font-size:16px;text-transform:uppercase;letter-spacing:2px;border-bottom:1px solid #ccc;padding-bottom:5px;margin-bottom:10px;color:#4a2574 !important;}
+        #pdfExportContainer .pdf-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+        #pdfExportContainer .pdf-field{flex:1;min-width:120px;}
+        #pdfExportContainer .pdf-field strong{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666 !important;}
+        #pdfExportContainer .pdf-field span{font-size:14px;font-weight:600;}
+        #pdfExportContainer .pdf-table{width:100%;border-collapse:collapse;margin-bottom:10px;}
+        #pdfExportContainer .pdf-table th{background:#2a1540;color:#fff !important;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;text-align:left;}
+        #pdfExportContainer .pdf-table td{padding:5px 8px;border-bottom:1px solid #ddd;font-size:12px;}
+        #pdfExportContainer .pdf-table tr:nth-child(even) td{background:#f5f0fa;}
+        #pdfExportContainer .pdf-attrs{display:flex;gap:8px;text-align:center;}
+        #pdfExportContainer .pdf-attr-box{flex:1;border:1px solid #ccc;border-radius:6px;padding:8px 4px;}
+        #pdfExportContainer .pdf-attr-box .attr-name{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#666 !important;}
+        #pdfExportContainer .pdf-attr-box .attr-val{font-size:20px;font-weight:bold;font-family:'Courier New',monospace;}
+        #pdfExportContainer .pdf-attr-box .attr-mod{font-size:12px;font-family:'Courier New',monospace;}
+        #pdfExportContainer .pdf-note{background:#f9f5ff;border-left:3px solid #4a2574;padding:8px 12px;font-style:italic;font-size:12px;margin-top:6px;white-space:pre-wrap;}
+        #pdfExportContainer .pdf-gallery-item{display:inline-block;width:150px;margin:0 8px 8px 0;vertical-align:top;border:1px solid #ddd;border-radius:4px;overflow:hidden;}
+        #pdfExportContainer .pdf-gallery-item img{width:100%;height:120px;object-fit:cover;display:block;}
+        #pdfExportContainer .pdf-gallery-item .pdf-caption{font-size:10px;padding:4px 6px;background:#f9f5ff;text-align:center;}
+        #pdfExportContainer .pdf-msg-item{border-bottom:1px solid #eee;padding:4px 0;font-size:11px;}
+        #pdfExportContainer .pdf-msg-item .msg-author{font-weight:700;font-size:10px;text-transform:uppercase;color:#4a2574 !important;}
+        #pdfExportContainer .pdf-footer{text-align:center;border-top:1px solid #ccc;padding-top:10px;font-size:10px;color:#999 !important;margin-top:20px;}
+
         ::-webkit-scrollbar{width:10px;height:10px;}
         ::-webkit-scrollbar-track{background:var(--bg);}
         ::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px;}
@@ -347,7 +381,7 @@
     <!-- ESTÁGIO 1: VERIFICAÇÃO DE IDADE -->
     <div class="stage active" id="stageAge">
         <div class="card">
-            <div class="icon">🔞</div>
+            <div class="icon"></div>
             <h2>Verificação de Idade</h2>
             <p class="subtitle">— Conteúdo restrito para maiores de 10 anos —</p>
             <div class="warning-box">
@@ -420,7 +454,8 @@
                 <button class="btn-action primary" onclick="triggerUpload()">📷 Adicionar Imagem</button>
                 <button class="btn-action save" onclick="saveCurrentCharacter()">💾 Salvar</button>
                 <button class="btn-action" onclick="clearCurrentCategory()">🧹 Limpar Aba</button>
-                <button class="btn-action export" onclick="exportAll()">📤 Exportar</button>
+                <button class="btn-action export" onclick="exportAll()">📤 JSON</button>
+                <button class="btn-action pdf" onclick="exportPDF()">📄 PDF</button>
                 <button class="btn-action" onclick="triggerImport()">📥 Importar</button>
                 <span class="save-status" id="saveStatus">✅ Tudo salvo</span>
             </div>
@@ -476,6 +511,9 @@
         </div>
         <div class="toast" id="toast">✅ Salvo!</div>
     </div>
+
+    <!-- Container oculto para renderização do PDF -->
+    <div id="pdfExportContainer"></div>
 
     <script>
         // ═══════════════════════ CONSTANTES ═══════════════════════
@@ -638,12 +676,12 @@
             const infoHTML=`<div class="section-title">📜 Informações Básicas</div><div class="info-grid">
                 ${[{id:'nome',l:'👤 Nome',p:'Nome do personagem'},{id:'classe',l:'⚔️ Classe',p:'Guerreiro, Mago...'},{id:'raca',l:' Raça',p:'Humano, Elfo...'},{id:'antecedente',l:' Antecedente',p:'Nobre, Soldado...'},{id:'alinhamento',l:'️ Alinhamento',p:'Leal e Bom...'},{id:'jogador',l:' Jogador',p:'Seu nome'}].map(f=>`<div class="info-field"><label>${f.l}</label><input type="text" id="sf_${f.id}" value="${(ch.ficha[f.id]||'').replace(/"/g,'&quot;')}" placeholder="${f.p}" oninput="updSheetField('info','${f.id}',this.value)"></div>`).join('')}
             </div>`;
-            const attacksHTML=`<details><summary>⚔️ Ataques & Ações</summary><div class="details-content"><div id="attacksArea">${(s.attacks||[]).map((a,i)=>`<div class="list-item"><input type="text" placeholder="Nome do ataque" value="${a.name||''}" oninput="updSheetNested('attacks',${i},'name',this.value)"><div style="display:flex;gap:4px;align-items:center;"><input type="text" class="mini-input" placeholder="Bônus" value="${a.bonus||''}" oninput="updSheetNested('attacks',${i},'bonus',this.value)"><input type="text" class="mini-input" placeholder="Dano" value="${a.dmg||''}" oninput="updSheetNested('attacks',${i},'dmg',this.value)"><button class="btn-mini" onclick="rmSheetItem('attacks',${i})">✕</button></div></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('attacks')">+ Adicionar Ataque</button></div></details>`;
-            const spellsHTML=`<details><summary>🔮 Magias</summary><div class="details-content"><div class="slots-grid">${SLOT_LEVELS.map(l=>`<div class="slot-box"><div class="slot-level">${l} Nível</div><input type="text" placeholder="x/x" value="${s.slots[l]||''}" oninput="updSheetSlot('${l}',this.value)"></div>`).join('')}</div><hr class="divider"><div id="spellsArea">${(s.spells||[]).map((sp,i)=>`<div class="list-item"><input type="text" placeholder="Nome da magia" value="${sp||''}" oninput="updSheetArr('spells',${i},this.value)"><button class="btn-mini" onclick="rmSheetItem('spells',${i})">✕</button></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('spells')">+ Adicionar Magia</button></div></details>`;
-            const equipHTML=`<details><summary>🎒 Equipamentos & Moedas</summary><div class="details-content"><div id="equipsArea">${(s.equips||[]).map((e,i)=>`<div class="list-item"><input type="text" placeholder="Nome do item" value="${e||''}" oninput="updSheetArr('equips',${i},this.value)"><button class="btn-mini" onclick="rmSheetItem('equips',${i})">✕</button></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('equips')">+ Adicionar Item</button><hr class="divider"><div class="info-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:0;">${[{id:'ouro',l:'💰 PO'},{id:'prata',l:'🪙 PP'},{id:'electro',l:'🟤 PE'},{id:'cobre',l:'🥉 PC'},{id:'platina',l:'💎 PL'}].map(m=>`<div class="info-field"><label>${m.l}</label><input type="text" id="sc_${m.id}" value="${s.combat[m.id]||''}" placeholder="0" oninput="updSheetField('combat','${m.id}',this.value)"></div>`).join('')}</div></div></details>`;
-            const traitsHTML=`<details><summary>🌟 Traços & Habilidades</summary><div class="details-content"><div id="traitsArea">${(s.traits||[]).map((t,i)=>`<div class="list-item"><input type="text" placeholder="Traço ou habilidade" value="${t||''}" oninput="updSheetArr('traits',${i},this.value)"><button class="btn-mini" onclick="rmSheetItem('traits',${i})">✕</button></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('traits')">+ Adicionar Traço</button></div></details>`;
-            const resistHTML=`<details><summary>🔰 Resistências & Outros</summary><div class="details-content"><div class="info-grid" style="margin-bottom:0;">${[{id:'resist',l:'🟢 Resistências',p:'Fogo, Frio...'},{id:'imun',l:'🔵 Imunidades',p:'Veneno...'},{id:'vuln',l:'🔴 Vulnerabilidades',p:'Necrótico...'},{id:'idiomas',l:'🗣️ Idiomas',p:'Comum, Élfico...'}].map(r=>`<div class="info-field"><label>${r.l}</label><input type="text" id="sc_${r.id}" value="${s.combat[r.id]||''}" placeholder="${r.p}" oninput="updSheetField('combat','${r.id}',this.value)"></div>`).join('')}</div></div></details>`;
-            const notesHTML=`<details><summary>📝 Notas da Campanha</summary><div class="details-content"><textarea class="notes-area" id="sheetNotes" placeholder="Anotações da campanha..." oninput="updSheetNotes(this.value)">${s.notes||''}</textarea></div></details>`;
+            const attacksHTML=`<details open><summary>⚔️ Ataques & Ações</summary><div class="details-content"><div id="attacksArea">${(s.attacks||[]).map((a,i)=>`<div class="list-item"><input type="text" placeholder="Nome do ataque" value="${a.name||''}" oninput="updSheetNested('attacks',${i},'name',this.value)"><div style="display:flex;gap:4px;align-items:center;"><input type="text" class="mini-input" placeholder="Bônus" value="${a.bonus||''}" oninput="updSheetNested('attacks',${i},'bonus',this.value)"><input type="text" class="mini-input" placeholder="Dano" value="${a.dmg||''}" oninput="updSheetNested('attacks',${i},'dmg',this.value)"><button class="btn-mini" onclick="rmSheetItem('attacks',${i})">✕</button></div></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('attacks')">+ Adicionar Ataque</button></div></details>`;
+            const spellsHTML=`<details open><summary>🔮 Magias</summary><div class="details-content"><div class="slots-grid">${SLOT_LEVELS.map(l=>`<div class="slot-box"><div class="slot-level">${l} Nível</div><input type="text" placeholder="x/x" value="${s.slots[l]||''}" oninput="updSheetSlot('${l}',this.value)"></div>`).join('')}</div><hr class="divider"><div id="spellsArea">${(s.spells||[]).map((sp,i)=>`<div class="list-item"><input type="text" placeholder="Nome da magia" value="${sp||''}" oninput="updSheetArr('spells',${i},this.value)"><button class="btn-mini" onclick="rmSheetItem('spells',${i})">✕</button></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('spells')">+ Adicionar Magia</button></div></details>`;
+            const equipHTML=`<details open><summary>🎒 Equipamentos & Moedas</summary><div class="details-content"><div id="equipsArea">${(s.equips||[]).map((e,i)=>`<div class="list-item"><input type="text" placeholder="Nome do item" value="${e||''}" oninput="updSheetArr('equips',${i},this.value)"><button class="btn-mini" onclick="rmSheetItem('equips',${i})">✕</button></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('equips')">+ Adicionar Item</button><hr class="divider"><div class="info-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:0;">${[{id:'ouro',l:'💰 PO'},{id:'prata',l:'🪙 PP'},{id:'electro',l:'🟤 PE'},{id:'cobre',l:'🥉 PC'},{id:'platina',l:'💎 PL'}].map(m=>`<div class="info-field"><label>${m.l}</label><input type="text" id="sc_${m.id}" value="${s.combat[m.id]||''}" placeholder="0" oninput="updSheetField('combat','${m.id}',this.value)"></div>`).join('')}</div></div></details>`;
+            const traitsHTML=`<details open><summary>🌟 Traços & Habilidades</summary><div class="details-content"><div id="traitsArea">${(s.traits||[]).map((t,i)=>`<div class="list-item"><input type="text" placeholder="Traço ou habilidade" value="${t||''}" oninput="updSheetArr('traits',${i},this.value)"><button class="btn-mini" onclick="rmSheetItem('traits',${i})">✕</button></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('traits')">+ Adicionar Traço</button></div></details>`;
+            const resistHTML=`<details open><summary>🔰 Resistências & Outros</summary><div class="details-content"><div class="info-grid" style="margin-bottom:0;">${[{id:'resist',l:'🟢 Resistências',p:'Fogo, Frio...'},{id:'imun',l:'🔵 Imunidades',p:'Veneno...'},{id:'vuln',l:'🔴 Vulnerabilidades',p:'Necrótico...'},{id:'idiomas',l:'🗣️ Idiomas',p:'Comum, Élfico...'}].map(r=>`<div class="info-field"><label>${r.l}</label><input type="text" id="sc_${r.id}" value="${s.combat[r.id]||''}" placeholder="${r.p}" oninput="updSheetField('combat','${r.id}',this.value)"></div>`).join('')}</div></div></details>`;
+            const notesHTML=`<details open><summary>📝 Notas da Campanha</summary><div class="details-content"><textarea class="notes-area" id="sheetNotes" placeholder="Anotações da campanha..." oninput="updSheetNotes(this.value)">${s.notes||''}</textarea></div></details>`;
             return`<div class="ficha-panel ${activeTab==='ficha'?'active':''}" data-panel="ficha">${infoHTML}${attacksHTML}${spellsHTML}${equipHTML}${traitsHTML}${resistHTML}${notesHTML}</div>`;
         }
 
@@ -800,6 +838,233 @@
         function renderDiceHistory(){const l=document.getElementById('diceHistoryList');if(!l)return;if(diceState.history.length===0){l.innerHTML='<div class="dice-history-empty">Nenhuma rolagem ainda</div>';return;}l.innerHTML=diceState.history.map(h=>{let i=`${h.qty}d${h.sides}`;if(h.modifier!==0)i+=(h.modifier>0?'+':'')+h.modifier;if(h.type==='vantagem')i+=' (V)';if(h.type==='desvantagem')i+=' (D)';const rs=h.rolls.slice(0,h.qty).join(', ');return`<div class="dice-history-item"><span class="roll-info">${i} → [${rs}]${h.modifier!==0?' '+(h.modifier>0?'+':'')+h.modifier:''}</span><span class="roll-total">${h.total}</span><span class="roll-time">${h.time}</span></div>`;}).join('');}
         function clearDiceHistory(){diceState.history=[];renderDiceHistory();showToast('🧹 Histórico limpo!');}
         document.addEventListener('keydown',e=>{if(e.code==='Space'&&activeTab==='dados'&&!e.target.matches('input,textarea,select,button')){e.preventDefault();rollDice();}});
+
+        // ═══════════════════════ 📄 EXPORTAÇÃO PDF ═══════════════════════
+        function exportPDF(){
+            const ch = getCurrentChar();
+            if (!ch) { showToast('⚠️ Nenhum personagem ativo!'); return; }
+            const s = ensureSheet(ch);
+            const pb = parseInt((s.combat.prof || '+2').replace(/[^\\-\\d]/g, '')) || 2;
+
+            const esc = (v) => String(v || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            const modFn = (v) => { const n = parseInt(v); return isNaN(n) ? null : Math.floor((n - 10) / 2); };
+            const modStr = (v) => { const m = modFn(v); if (m === null) return '-'; return (m >= 0 ? '+' : '') + m; };
+
+            // ATRIBUTOS
+            let attrsHTML = '<div class="pdf-attrs">';
+            ATTRS.forEach(a => {
+                const val = s.attrs[a.id] || a.def;
+                attrsHTML += `<div class="pdf-attr-box"><div class="attr-name">${a.name}</div><div class="attr-val">${esc(val)}</div><div class="attr-mod">${modStr(val)}</div></div>`;
+            });
+            attrsHTML += '</div>';
+
+            // SALVAGUARDAS
+            let savesHTML = '';
+            SAVES_NAMES.forEach((sn, i) => {
+                const aid = ATTRS[i].id, m = modFn(s.attrs[aid] || ATTRS[i].def) || 0;
+                const prof = s.skills['save_' + sn] || false;
+                const total = prof ? m + pb : m;
+                savesHTML += `<tr><td>${sn} (${ATTRS[i].abbr})</td><td>${prof ? '✅' : '—'}</td><td>${(total >= 0 ? '+' : '') + total}</td></tr>`;
+            });
+
+            // PERÍCIAS
+            let skillsHTML = '';
+            SKILLS_LIST.forEach(sk => {
+                const a = ATTRS.find(x => x.id === sk.attr);
+                const m = modFn(s.attrs[sk.attr] || (a ? a.def : '10')) || 0;
+                const prof = s.skills[sk.name] || false;
+                const total = prof ? m + pb : m;
+                skillsHTML += `<tr><td>${sk.name}</td><td>${a ? a.abbr : ''}</td><td>${prof ? '✅' : '—'}</td><td>${(total >= 0 ? '+' : '') + total}</td></tr>`;
+            });
+
+            // STATUS DE COMBATE
+            const sc = s.combat;
+            const combatFields = [
+                { l: 'CA', v: sc.ca || '-' },
+                { l: 'Iniciativa', v: sc.iniciativa || '-' },
+                { l: 'Deslocamento', v: sc.desloc || '-' },
+                { l: 'Nível', v: sc.nivel || '-' },
+                { l: 'XP', v: sc.xp || '-' },
+                { l: 'Proficiência', v: sc.prof || '+2' },
+                { l: 'Testes de Morte', v: sc.deathSaves || '-' },
+            ];
+            let combatHTML = `<p><strong>PV:</strong> ${sc.hpCur || 0}/${sc.hpMax || 0} (Temp: ${sc.hpTemp || 0})</p><div class="pdf-row">`;
+            combatFields.forEach(cf => { combatHTML += `<div class="pdf-field"><strong>${cf.l}</strong><span>${esc(cf.v)}</span></div>`; });
+            combatHTML += '</div>';
+
+            // INFORMAÇÕES BÁSICAS
+            const fi = ch.ficha || {};
+            const infoFields = [
+                { l: 'Nome', v: fi.nome || ch.name || '-' },
+                { l: 'Classe', v: fi.classe || '-' },
+                { l: 'Raça', v: fi.raca || '-' },
+                { l: 'Antecedente', v: fi.antecedente || '-' },
+                { l: 'Alinhamento', v: fi.alinhamento || '-' },
+                { l: 'Jogador', v: fi.jogador || '-' },
+            ];
+            let infoHTML = '<div class="pdf-row">';
+            infoFields.forEach(f => { infoHTML += `<div class="pdf-field"><strong>${f.l}</strong><span>${esc(f.v)}</span></div>`; });
+            infoHTML += '</div>';
+
+            // RESISTÊNCIAS
+            const resistFields = [
+                { l: 'Resistências', v: sc.resist },
+                { l: 'Imunidades', v: sc.imun },
+                { l: 'Vulnerabilidades', v: sc.vuln },
+                { l: 'Idiomas', v: sc.idiomas },
+            ];
+            let resistHTML = '<div class="pdf-row">';
+            resistFields.forEach(r => { resistHTML += `<div class="pdf-field"><strong>${r.l}</strong><span>${esc(r.v) || '—'}</span></div>`; });
+            resistHTML += '</div>';
+
+            // MOEDAS
+            const coins = [
+                { l: 'PO (Ouro)', v: sc.ouro },
+                { l: 'PP (Prata)', v: sc.prata },
+                { l: 'PE (Electro)', v: sc.electro },
+                { l: 'PC (Cobre)', v: sc.cobre },
+                { l: 'PL (Platina)', v: sc.platina },
+            ];
+            let coinsHTML = '<div class="pdf-row">';
+            coins.forEach(c => { coinsHTML += `<div class="pdf-field"><strong>${c.l}</strong><span>${esc(c.v) || '0'}</span></div>`; });
+            coinsHTML += '</div>';
+
+            // ATAQUES
+            let attacksHTML = '';
+            if ((s.attacks || []).length > 0) {
+                attacksHTML = '<table class="pdf-table"><tr><th>Ataque</th><th>Bônus</th><th>Dano</th></tr>';
+                s.attacks.forEach(a => { attacksHTML += `<tr><td>${esc(a.name) || '—'}</td><td>${esc(a.bonus) || '—'}</td><td>${esc(a.dmg) || '—'}</td></tr>`; });
+                attacksHTML += '</table>';
+            } else { attacksHTML = '<p style="color:#999;font-style:italic;">Nenhum ataque registrado.</p>'; }
+
+            // MAGIAS
+            let spellsHTML = '';
+            const filledSlots = SLOT_LEVELS.filter(l => s.slots[l]);
+            if (filledSlots.length > 0) {
+                spellsHTML += '<div class="pdf-row">';
+                filledSlots.forEach(l => { spellsHTML += `<div class="pdf-field"><strong>${l} Nível</strong><span>${esc(s.slots[l])}</span></div>`; });
+                spellsHTML += '</div>';
+            }
+            if ((s.spells || []).length > 0) {
+                spellsHTML += '<table class="pdf-table"><tr><th>#</th><th>Magia</th></tr>';
+                s.spells.forEach((sp, i) => { if (sp) spellsHTML += `<tr><td>${i + 1}</td><td>${esc(sp)}</td></tr>`; });
+                spellsHTML += '</table>';
+            }
+            if (!filledSlots.length && !(s.spells || []).filter(x => x).length) {
+                spellsHTML += '<p style="color:#999;font-style:italic;">Nenhuma magia registrada.</p>';
+            }
+
+            // EQUIPAMENTOS
+            let equipsHTML = '';
+            if ((s.equips || []).filter(x => x).length > 0) {
+                equipsHTML = '<ul>';
+                s.equips.forEach(e => { if (e) equipsHTML += `<li>${esc(e)}</li>`; });
+                equipsHTML += '</ul>';
+            } else { equipsHTML = '<p style="color:#999;font-style:italic;">Nenhum equipamento registrado.</p>'; }
+
+            // TRAÇOS
+            let traitsHTML = '';
+            if ((s.traits || []).filter(x => x).length > 0) {
+                traitsHTML = '<ul>';
+                s.traits.forEach(t => { if (t) traitsHTML += `<li>${esc(t)}</li>`; });
+                traitsHTML += '</ul>';
+            } else { traitsHTML = '<p style="color:#999;font-style:italic;">Nenhum traço registrado.</p>'; }
+
+            // NOTAS DA CAMPANHA
+            const campNotes = s.notes ? `<div class="pdf-note">${esc(s.notes)}</div>` : '';
+
+            // GALERIAS
+            let galleryHTML = '';
+            CATEGORIES.forEach(cat => {
+                const imgs = ch.images[cat.id] || [];
+                const note = ch.notes[cat.id] || '';
+                const msgs = ch.messages?.[cat.id] || [];
+                const hasContent = imgs.length > 0 || note || msgs.some(m => m && m.length > 0);
+                if (!hasContent) return;
+
+                galleryHTML += `<div class="pdf-section"><h2>${cat.icon} ${cat.name}</h2>`;
+                if (imgs.length > 0) {
+                    imgs.forEach((img, idx) => {
+                        const src = typeof img === 'string' ? img : img.src;
+                        const caption = typeof img === 'string' ? '' : (img.caption || '');
+                        galleryHTML += `<div class="pdf-gallery-item"><img src="${src}" alt="${cat.name}"><div class="pdf-caption">${esc(caption) || '—'}</div></div>`;
+                        if (cat.id === 'divulgacoes' && msgs[idx] && msgs[idx].length > 0) {
+                            galleryHTML += '<div style="margin-left:8px;font-size:10px;">';
+                            msgs[idx].forEach(m => {
+                                const time = new Date(m.ts).toLocaleString('pt-BR');
+                                galleryHTML += `<div class="pdf-msg-item"><span class="msg-author">${esc(m.author || 'Anônimo')}</span> (${time}): ${esc(m.text)}</div>`;
+                            });
+                            galleryHTML += '</div>';
+                        }
+                    });
+                }
+                if (note.trim()) {
+                    galleryHTML += `<div class="pdf-note">${esc(note)}</div>`;
+                }
+                galleryHTML += '</div>';
+            });
+
+            // MONTAGEM COMPLETA
+            const pdfHTML = `
+                <div class="pdf-header">
+                    <h1>⚔️ ${esc(ch.name || 'Personagem')}</h1>
+                    <div class="pdf-subtitle">Grimório do Personagem — Exportado em ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+                <div class="pdf-section"><h2>📜 Informações Básicas</h2>${infoHTML}</div>
+                <div class="pdf-section"><h2>🧬 Atributos</h2>${attrsHTML}</div>
+                <div class="pdf-section"><h2>⚔️ Status de Combate</h2>${combatHTML}</div>
+                <div class="pdf-section"><h2>🛡️ Salvaguardas</h2>
+                    <table class="pdf-table"><tr><th>Salvaguarda</th><th>Prof.</th><th>Total</th></tr>${savesHTML}</table>
+                </div>
+                <div class="pdf-section"><h2>🎯 Perícias</h2>
+                    <table class="pdf-table"><tr><th>Perícia</th><th>Attr</th><th>Prof.</th><th>Total</th></tr>${skillsHTML}</table>
+                </div>
+                <div class="pdf-section"><h2>⚔️ Ataques & Ações</h2>${attacksHTML}</div>
+                <div class="pdf-section"><h2>🔮 Magias</h2>${spellsHTML}</div>
+                <div class="pdf-section"><h2>🎒 Equipamentos</h2>${equipsHTML}</div>
+                <div class="pdf-section"><h2>💰 Moedas</h2>${coinsHTML}</div>
+                <div class="pdf-section"><h2>🌟 Traços & Habilidades</h2>${traitsHTML}</div>
+                <div class="pdf-section"><h2>🔰 Resistências & Outros</h2>${resistHTML}</div>
+                ${campNotes ? `<div class="pdf-section"><h2>📝 Notas da Campanha</h2>${campNotes}</div>` : ''}
+                ${galleryHTML}
+                <div class="pdf-footer">
+                    Grimório do Personagem — MyHub Nitro &copy; ${new Date().getFullYear()} — Documento gerado automaticamente.
+                </div>
+            `;
+
+            // RENDERIZAR E BAIXAR
+            const container = document.getElementById('pdfExportContainer');
+            container.innerHTML = pdfHTML;
+
+            const opt = {
+                margin: [8, 10, 8, 10],
+                filename: `grimorio-${(ch.name || 'personagem').replace(/[^a-zA-Z0-9]/g, '_')}-${new Date().toISOString().slice(0, 10)}.pdf`,
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: false,
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait'
+                },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            showToast('📄 Gerando PDF...');
+
+            html2pdf().set(opt).from(container).save().then(() => {
+                container.innerHTML = '';
+                showToast('✅ PDF exportado com sucesso!');
+            }).catch((err) => {
+                console.error(err);
+                container.innerHTML = '';
+                showToast('❌ Erro ao gerar PDF.');
+            });
+        }
 
         // ═══════════ INIT ══════════
         setupAgeGate();
