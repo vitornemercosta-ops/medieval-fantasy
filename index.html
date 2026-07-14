@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🔞📜 Grimório do Personagem – RPG</title>
-    <!-- CDN html2pdf.js para exportação PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --bg: #0a0e27; --panel: #1a2456; --panel2: #151c42; --tab-active: #3d1f5c;
             --gold: #9b6fc7; --gold-light: #c9a8e8; --text: #cfe0ff; --text-muted: #8a9bc9;
             --border: #4a2574; --accent: #b48ee0; --danger: #e88aa8; --green: #6fc7a8;
             --blue: #6fa8e0; --orange: #e8b86f; --input-bg: #0d122e;
+            --music-bg: #1a0a3e; --music-accent: #d4a8ff; --music-glow: rgba(212,168,255,0.3);
         }
         *{margin:0;padding:0;box-sizing:border-box;}
         html{overflow-x:hidden;}
@@ -86,10 +85,8 @@
         .tab-btn.active{color:#fff;background:var(--tab-active);}
         .tab-btn.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold-light),var(--gold));box-shadow:0 0 10px var(--gold-light);}
         .tab-btn .icon{margin-right:5px;}
-        .sheet-panel,.gallery-panel,.ficha-panel,.dice-panel{display:none;padding:clamp(14px,3vw,24px);min-height:420px;animation:fadeIn 0.3s ease;}
-        .sheet-panel.active,.gallery-panel.active,.ficha-panel.active,.dice-panel.active{display:block;}
-
-        /* ═══════ GALERIA ═══════ */
+        .sheet-panel,.gallery-panel,.ficha-panel,.dice-panel,.music-panel{display:none;padding:clamp(14px,3vw,24px);min-height:420px;animation:fadeIn 0.3s ease;}
+        .sheet-panel.active,.gallery-panel.active,.ficha-panel.active,.dice-panel.active,.music-panel.active{display:block;}
         .image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(200px,100%),1fr));gap:clamp(10px,2vw,16px);}
         .image-card{background:var(--bg);border:2px dashed var(--border);border-radius:8px;position:relative;overflow:hidden;transition:all 0.3s;display:flex;flex-direction:column;}
         .image-card:hover{border-color:var(--gold-light);transform:translateY(-3px);box-shadow:0 8px 25px rgba(155,111,199,0.25);}
@@ -110,8 +107,6 @@
         .category-notes textarea{width:100%;min-height:80px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:clamp(0.82rem,1.5vw,0.9rem);padding:10px;resize:vertical;}
         .category-notes textarea:focus{outline:none;border-color:var(--gold-light);}
         .category-notes textarea::placeholder{color:var(--text-muted);font-style:italic;}
-
-        /* ═══════ DIVULGAÇÕES - MENSAGENS ═══════ */
         .msg-badge{position:absolute;top:6px;left:6px;background:var(--blue);color:#fff;font-size:0.7rem;font-weight:700;padding:3px 8px;border-radius:12px;z-index:2;box-shadow:0 2px 8px rgba(111,168,224,0.5);}
         .msg-badge.zero{background:var(--text-muted);box-shadow:none;}
         .msg-btn{position:absolute;bottom:6px;right:6px;width:32px;height:32px;background:rgba(111,168,224,0.9);border:none;border-radius:50%;color:#fff;font-size:1rem;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:2;transition:all 0.25s;}
@@ -139,8 +134,75 @@
         .msg-input-area input::placeholder{color:var(--text-muted);}
         .msg-send-btn{padding:10px 18px;background:linear-gradient(135deg,var(--blue),#4a7a9c);border:1px solid var(--blue);color:#fff;border-radius:6px;cursor:pointer;font-weight:700;font-size:0.8rem;letter-spacing:1px;text-transform:uppercase;transition:all 0.25s;font-family:inherit;}
         .msg-send-btn:hover{box-shadow:0 0 15px rgba(111,168,224,0.5);transform:translateY(-1px);}
-
-        /* ═══════ PAINÉIS DE FICHA ═══════ */
+        .music-container{display:grid;grid-template-columns:1fr;gap:20px;}
+        @media(min-width:900px){.music-container{grid-template-columns:320px 1fr;}}
+        .player-section{background:linear-gradient(135deg,rgba(26,10,62,0.9),rgba(74,37,116,0.4));border:2px solid var(--gold);border-radius:16px;padding:clamp(16px,3vw,24px);position:relative;overflow:hidden;box-shadow:0 0 40px var(--music-glow);}
+        .player-section::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(212,168,255,0.1) 0%,transparent 50%);pointer-events:none;}
+        .player-section.playing{animation:musicPulse 2s ease-in-out infinite;}
+        @keyframes musicPulse{0%,100%{box-shadow:0 0 40px var(--music-glow);}50%{box-shadow:0 0 60px rgba(212,168,255,0.5);}}
+        .player-disc{width:clamp(120px,20vw,160px);height:clamp(120px,20vw,160px);margin:0 auto 16px;border-radius:50%;background:conic-gradient(from 0deg,#1a0a3e,#4a2574,#6a3fa0,#4a2574,#1a0a3e);border:4px solid var(--gold);position:relative;display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px var(--music-glow);}
+        .player-disc.spinning{animation:spin 3s linear infinite;}
+        @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+        .player-disc::before{content:'';position:absolute;width:30%;height:30%;border-radius:50%;background:var(--bg);border:2px solid var(--gold-light);}
+        .player-disc::after{content:'🎵';position:absolute;font-size:clamp(1.5rem,3vw,2rem);opacity:0.6;}
+        .player-disc .disc-grooves{position:absolute;inset:15%;border-radius:50%;border:1px solid rgba(201,168,232,0.2);background:repeating-radial-gradient(circle,transparent,transparent 3px,rgba(201,168,232,0.05) 3px,rgba(201,168,232,0.05) 4px);}
+        .player-title{text-align:center;margin-bottom:4px;}
+        .player-title .track-name{font-size:clamp(1rem,2vw,1.2rem);font-weight:700;color:var(--music-accent);letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+        .player-title .track-artist{font-size:clamp(0.72rem,1.3vw,0.8rem);color:var(--text-muted);font-style:italic;margin-top:2px;}
+        .player-progress{margin:16px 0;}
+        .progress-bar{width:100%;height:6px;background:rgba(10,14,39,0.8);border-radius:3px;cursor:pointer;position:relative;overflow:hidden;border:1px solid var(--border);}
+        .progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--music-accent));border-radius:3px;width:0%;transition:width 0.1s linear;position:relative;}
+        .progress-fill::after{content:'';position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:12px;height:12px;background:var(--music-accent);border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px var(--music-glow);opacity:0;transition:opacity 0.2s;}
+        .progress-bar:hover .progress-fill::after{opacity:1;}
+        .progress-times{display:flex;justify-content:space-between;margin-top:6px;font-size:clamp(0.65rem,1.2vw,0.72rem);color:var(--text-muted);font-family:'Courier New',monospace;}
+        .player-controls{display:flex;align-items:center;justify-content:center;gap:clamp(8px,2vw,14px);margin:16px 0;}
+        .ctrl-btn{background:transparent;border:2px solid var(--border);color:var(--text);width:clamp(36px,6vw,44px);height:clamp(36px,6vw,44px);border-radius:50%;cursor:pointer;font-size:clamp(0.9rem,1.8vw,1.1rem);display:flex;align-items:center;justify-content:center;transition:all 0.25s;font-family:inherit;}
+        .ctrl-btn:hover{border-color:var(--music-accent);color:var(--music-accent);transform:scale(1.1);box-shadow:0 0 15px var(--music-glow);}
+        .ctrl-btn.play-btn{width:clamp(48px,8vw,58px);height:clamp(48px,8vw,58px);background:linear-gradient(135deg,#6a3fa0,#4a2574);border-color:var(--gold);color:#fff;font-size:clamp(1.2rem,2.5vw,1.5rem);}
+        .ctrl-btn.play-btn:hover{background:linear-gradient(135deg,#7d4fb8,#5a3594);box-shadow:0 0 25px var(--music-glow);transform:scale(1.15);}
+        .ctrl-btn.active{background:rgba(212,168,255,0.2);border-color:var(--music-accent);color:var(--music-accent);}
+        .player-volume{display:flex;align-items:center;gap:10px;margin-top:12px;padding:8px 12px;background:rgba(10,14,39,0.5);border-radius:8px;}
+        .player-volume .vol-icon{font-size:1.2rem;cursor:pointer;transition:all 0.2s;}
+        .player-volume .vol-icon:hover{transform:scale(1.2);}
+        .player-volume input[type="range"]{flex:1;accent-color:var(--music-accent);height:4px;}
+        .player-volume .vol-value{font-size:0.7rem;color:var(--text-muted);min-width:30px;text-align:right;font-family:'Courier New',monospace;}
+        .playlist-section{background:var(--bg);border:2px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;max-height:600px;}
+        .playlist-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(135deg,rgba(74,37,116,0.3),rgba(26,36,86,0.5));border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;}
+        .playlist-header h3{color:var(--music-accent);font-size:clamp(0.85rem,1.7vw,1rem);letter-spacing:2px;text-transform:uppercase;margin:0;}
+        .playlist-actions{display:flex;gap:6px;flex-wrap:wrap;}
+        .playlist-actions button{padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;font-size:0.7rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;font-family:inherit;}
+        .playlist-actions button:hover{border-color:var(--music-accent);color:var(--music-accent);box-shadow:0 0 10px var(--music-glow);}
+        .playlist-list{flex:1;overflow-y:auto;padding:8px;}
+        .playlist-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(26,36,86,0.3);border:1px solid transparent;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all 0.25s;position:relative;}
+        .playlist-item:hover{border-color:var(--border);background:rgba(26,36,86,0.6);transform:translateX(3px);}
+        .playlist-item.active{border-color:var(--music-accent);background:rgba(212,168,255,0.1);box-shadow:0 0 15px var(--music-glow);}
+        .playlist-item.active .track-number{color:var(--music-accent);}
+        .playlist-item .track-number{font-size:0.75rem;color:var(--text-muted);min-width:24px;font-family:'Courier New',monospace;font-weight:700;}
+        .playlist-item .track-info{flex:1;min-width:0;}
+        .playlist-item .track-title{font-size:clamp(0.8rem,1.5vw,0.88rem);color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .playlist-item .track-meta{font-size:0.68rem;color:var(--text-muted);margin-top:2px;}
+        .playlist-item .track-duration{font-size:0.72rem;color:var(--text-muted);font-family:'Courier New',monospace;}
+        .playlist-item .track-actions{display:flex;gap:4px;opacity:0;transition:opacity 0.2s;}
+        .playlist-item:hover .track-actions{opacity:1;}
+        .playlist-item .track-actions button{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:0.85rem;padding:4px;border-radius:4px;transition:all 0.2s;}
+        .playlist-item .track-actions button:hover{color:var(--music-accent);background:rgba(212,168,255,0.15);}
+        .playlist-item .track-actions button.del-btn:hover{color:var(--danger);background:rgba(232,138,168,0.15);}
+        .playlist-item.playing .track-number::after{content:' ♪';color:var(--music-accent);animation:bounce 0.6s ease infinite alternate;}
+        @keyframes bounce{from{transform:translateY(0);}to{transform:translateY(-3px);}}
+        .playlist-empty{text-align:center;padding:40px 20px;color:var(--text-muted);}
+        .playlist-empty .empty-icon{font-size:3rem;margin-bottom:10px;opacity:0.5;}
+        .playlist-empty p{font-size:0.85rem;font-style:italic;line-height:1.5;}
+        .add-music-section{padding:12px 16px;border-top:1px solid var(--border);background:rgba(10,14,39,0.5);}
+        .add-music-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+        .add-music-row input{flex:1;min-width:120px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:0.82rem;padding:8px 10px;}
+        .add-music-row input:focus{outline:none;border-color:var(--music-accent);box-shadow:0 0 8px var(--music-glow);}
+        .add-music-row input::placeholder{color:var(--text-muted);}
+        .add-music-row button{padding:8px 14px;background:linear-gradient(135deg,#6a3fa0,#4a2574);border:1px solid var(--gold);border-radius:6px;color:#fff;cursor:pointer;font-weight:700;font-size:0.72rem;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;font-family:inherit;white-space:nowrap;}
+        .add-music-row button:hover{box-shadow:0 0 15px var(--music-glow);transform:translateY(-1px);}
+        .music-visualizer{display:flex;align-items:flex-end;justify-content:center;gap:3px;height:30px;margin:10px 0;}
+        .viz-bar{width:4px;background:linear-gradient(to top,var(--gold),var(--music-accent));border-radius:2px;transition:height 0.15s ease;height:4px;}
+        .viz-bar.active{animation:vizPulse 0.4s ease infinite alternate;}
+        @keyframes vizPulse{from{height:4px;}to{height:var(--h,20px);}}
         .section-title{color:var(--gold-light);font-size:clamp(0.85rem,1.7vw,1rem);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);text-align:center;}
         .attributes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
         .attr-slot{background:rgba(26,36,86,0.5);border:1px solid var(--border);border-radius:12px;padding:clamp(10px,2.5vw,18px);text-align:center;transition:all 0.25s;}
@@ -307,42 +369,10 @@
         .btn-action.save{background:#2a7a5c;border-color:#2a7a5c;color:#fff;}
         .btn-action.save:hover{background:#35996f;box-shadow:0 0 20px rgba(53,153,111,0.4);}
         .btn-action.export{background:#2a3a6a;border-color:#3a4a8a;}
-        .btn-action.pdf{background:#8b1a1a;border-color:#b52a2a;color:#fff;}
-        .btn-action.pdf:hover{background:#a52a2a;box-shadow:0 0 20px rgba(200,40,40,0.4);}
         .save-status{margin-left:auto;color:var(--text-muted);font-size:clamp(0.68rem,1.2vw,0.75rem);font-style:italic;}
         .save-status.saved{color:var(--green);}
         .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,#35996f,#2a7a5c);color:#fff;padding:clamp(10px,2vw,14px) clamp(16px,3vw,28px);border-radius:8px;font-weight:600;letter-spacing:1px;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:300;transition:transform 0.4s ease;pointer-events:none;border:1px solid var(--green);font-size:clamp(0.78rem,1.5vw,0.9rem);max-width:90vw;text-align:center;}
         .toast.show{transform:translateX(-50%) translateY(0);}
-
-        /* ═══════ CONTAINER OCULTO PARA PDF ═══════ */
-        #pdfExportContainer{position:absolute;left:-9999px;top:0;width:800px;background:#fff;color:#111;font-family:'Segoe UI',Arial,sans-serif;font-size:13px;line-height:1.5;padding:30px;z-index:-1;}
-        #pdfExportContainer *{color:#111 !important;text-shadow:none !important;box-shadow:none !important;}
-        #pdfExportContainer .pdf-header{text-align:center;border-bottom:3px double #333;padding-bottom:15px;margin-bottom:20px;}
-        #pdfExportContainer .pdf-header h1{font-size:26px;letter-spacing:3px;text-transform:uppercase;margin:0;color:#2a1540 !important;}
-        #pdfExportContainer .pdf-header .pdf-subtitle{font-size:12px;color:#666 !important;margin-top:4px;}
-        #pdfExportContainer .pdf-section{margin-bottom:20px;page-break-inside:avoid;}
-        #pdfExportContainer .pdf-section h2{font-size:16px;text-transform:uppercase;letter-spacing:2px;border-bottom:1px solid #ccc;padding-bottom:5px;margin-bottom:10px;color:#4a2574 !important;}
-        #pdfExportContainer .pdf-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
-        #pdfExportContainer .pdf-field{flex:1;min-width:120px;}
-        #pdfExportContainer .pdf-field strong{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666 !important;}
-        #pdfExportContainer .pdf-field span{font-size:14px;font-weight:600;}
-        #pdfExportContainer .pdf-table{width:100%;border-collapse:collapse;margin-bottom:10px;}
-        #pdfExportContainer .pdf-table th{background:#2a1540;color:#fff !important;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;text-align:left;}
-        #pdfExportContainer .pdf-table td{padding:5px 8px;border-bottom:1px solid #ddd;font-size:12px;}
-        #pdfExportContainer .pdf-table tr:nth-child(even) td{background:#f5f0fa;}
-        #pdfExportContainer .pdf-attrs{display:flex;gap:8px;text-align:center;}
-        #pdfExportContainer .pdf-attr-box{flex:1;border:1px solid #ccc;border-radius:6px;padding:8px 4px;}
-        #pdfExportContainer .pdf-attr-box .attr-name{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#666 !important;}
-        #pdfExportContainer .pdf-attr-box .attr-val{font-size:20px;font-weight:bold;font-family:'Courier New',monospace;}
-        #pdfExportContainer .pdf-attr-box .attr-mod{font-size:12px;font-family:'Courier New',monospace;}
-        #pdfExportContainer .pdf-note{background:#f9f5ff;border-left:3px solid #4a2574;padding:8px 12px;font-style:italic;font-size:12px;margin-top:6px;white-space:pre-wrap;}
-        #pdfExportContainer .pdf-gallery-item{display:inline-block;width:150px;margin:0 8px 8px 0;vertical-align:top;border:1px solid #ddd;border-radius:4px;overflow:hidden;}
-        #pdfExportContainer .pdf-gallery-item img{width:100%;height:120px;object-fit:cover;display:block;}
-        #pdfExportContainer .pdf-gallery-item .pdf-caption{font-size:10px;padding:4px 6px;background:#f9f5ff;text-align:center;}
-        #pdfExportContainer .pdf-msg-item{border-bottom:1px solid #eee;padding:4px 0;font-size:11px;}
-        #pdfExportContainer .pdf-msg-item .msg-author{font-weight:700;font-size:10px;text-transform:uppercase;color:#4a2574 !important;}
-        #pdfExportContainer .pdf-footer{text-align:center;border-top:1px solid #ccc;padding-top:10px;font-size:10px;color:#999 !important;margin-top:20px;}
-
         ::-webkit-scrollbar{width:10px;height:10px;}
         ::-webkit-scrollbar-track{background:var(--bg);}
         ::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px;}
@@ -367,6 +397,7 @@
             .site-header .user-info{justify-content:center;}
             .theme-grid{grid-template-columns:repeat(2,1fr);}
             .hp-slot{grid-column:1/3;}
+            .music-container{grid-template-columns:1fr !important;}
         }
         @media(max-width:400px){
             .btn-group{flex-direction:column;}
@@ -378,10 +409,9 @@
 </head>
 <body class="auth-mode">
 
-    <!-- ESTÁGIO 1: VERIFICAÇÃO DE IDADE -->
     <div class="stage active" id="stageAge">
         <div class="card">
-            <div class="icon"></div>
+            <div class="icon">🔞</div>
             <h2>Verificação de Idade</h2>
             <p class="subtitle">— Conteúdo restrito para maiores de 10 anos —</p>
             <div class="warning-box">
@@ -397,7 +427,6 @@
         </div>
     </div>
 
-    <!-- ESTÁGIO 1B: BLOQUEADO -->
     <div class="stage" id="stageBlocked">
         <div class="card">
             <div class="icon">🚫</div><h2>Acesso Negado</h2><p class="subtitle">— Menores de 10 anos —</p>
@@ -406,11 +435,10 @@
         </div>
     </div>
 
-    <!-- ESTÁGIO 2: LOGIN -->
     <div class="stage" id="stageAuth">
         <div class="card">
             <div id="loginForm">
-                <div class="icon"></div><h2>Entrar</h2><p class="subtitle">— Acesse seu grimório —</p>
+                <div class="icon">🔐</div><h2>Entrar</h2><p class="subtitle">— Acesse seu grimório protegido —</p>
                 <div class="input-group"><label>📧 Email</label><input type="email" id="loginEmail" placeholder="seu@email.com"/></div>
                 <div class="input-group"><label>🔒 Senha</label><input type="password" id="loginPassword" placeholder="••••••••"/></div>
                 <p class="error-msg" id="loginError"></p>
@@ -421,7 +449,7 @@
                 <div class="icon">✨</div><h2>Criar Conta</h2><p class="subtitle">— Registre-se no grimório —</p>
                 <div class="input-group"><label>👤 Nome</label><input type="text" id="regName" placeholder="Seu nome"/></div>
                 <div class="input-group"><label>📧 Email</label><input type="email" id="regEmail" placeholder="seu@email.com"/></div>
-                <div class="input-group"><label> Senha</label><input type="password" id="regPassword" placeholder="Mínimo 6 caracteres"/></div>
+                <div class="input-group"><label>🔑 Senha</label><input type="password" id="regPassword" placeholder="Mínimo 6 caracteres"/></div>
                 <div class="input-group"><label>🔒 Confirmar Senha</label><input type="password" id="regConfirm" placeholder="Repita a senha"/></div>
                 <p class="error-msg" id="regError"></p>
                 <button class="btn btn-primary btn-full" onclick="doRegister()">📝 Criar Conta</button>
@@ -430,7 +458,6 @@
         </div>
     </div>
 
-    <!-- ESTÁGIO 3: GRIMÓRIO -->
     <div class="stage grimoire-stage" id="stageGrimoire">
         <div class="site-header">
             <div class="logo"><span>⚔️</span><span>GRIMÓRIO</span></div>
@@ -454,14 +481,14 @@
                 <button class="btn-action primary" onclick="triggerUpload()">📷 Adicionar Imagem</button>
                 <button class="btn-action save" onclick="saveCurrentCharacter()">💾 Salvar</button>
                 <button class="btn-action" onclick="clearCurrentCategory()">🧹 Limpar Aba</button>
-                <button class="btn-action export" onclick="exportAll()">📤 JSON</button>
-                <button class="btn-action pdf" onclick="exportPDF()">📄 PDF</button>
+                <button class="btn-action export" onclick="exportAll()">📤 Exportar</button>
                 <button class="btn-action" onclick="triggerImport()">📥 Importar</button>
                 <span class="save-status" id="saveStatus">✅ Tudo salvo</span>
             </div>
             <input type="file" id="hiddenFileInput" accept="image/*" multiple style="display:none" onchange="handleFileSelect(event)">
             <input type="file" id="hiddenImportInput" accept=".json" style="display:none" onchange="handleImport(event)">
             <input type="file" id="hiddenBgInput" accept="image/*" style="display:none" onchange="handleBgUpload(event)">
+            <input type="file" id="hiddenMusicInput" accept="audio/*" multiple style="display:none" onchange="handleMusicUpload(event)">
         </div>
         <div class="lightbox hidden" id="lightbox" onclick="closeLightbox()"><img id="lightboxImg" src="" alt="Preview"></div>
         <div class="modal-overlay hidden" id="genericModal">
@@ -494,7 +521,6 @@
                 </div>
             </div>
         </div>
-        <!-- MODAL DE MENSAGENS DAS DIVULGAÇÕES -->
         <div class="modal-overlay hidden" id="msgModal">
             <div class="modal msg-modal">
                 <div class="msg-modal-header"><h3 id="msgModalTitle">💬 Mensagens</h3><button class="msg-modal-close" onclick="closeMsgModal()"><span class="x-icon">✕</span><span>Fechar</span></button></div>
@@ -512,12 +538,74 @@
         <div class="toast" id="toast">✅ Salvo!</div>
     </div>
 
-    <!-- Container oculto para renderização do PDF -->
-    <div id="pdfExportContainer"></div>
-
     <script>
+        // ═══════════════════════════════════════════════════════════
+        // 🔐 MÓDULO DE CRIPTOGRAFIA (AES-256-GCM + PBKDF2)
+        // ═══════════════════════════════════════════════════════════
+        const CRYPTO = {
+            APP_SALT: 'GrimorioRPG_v2_Salt_Ariadne_2026',
+            PBKDF2_ITERATIONS: 100000,
+
+            async deriveKey(passphrase, saltBytes) {
+                const enc = new TextEncoder();
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveKey']
+                );
+                return crypto.subtle.deriveKey(
+                    { name: 'PBKDF2', salt: saltBytes, iterations: this.PBKDF2_ITERATIONS, hash: 'SHA-256' },
+                    keyMaterial,
+                    { name: 'AES-GCM', length: 256 },
+                    false,
+                    ['encrypt', 'decrypt']
+                );
+            },
+
+            async encrypt(plaintext, passphrase) {
+                const enc = new TextEncoder();
+                const saltBytes = crypto.getRandomValues(new Uint8Array(16));
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const key = await this.deriveKey(passphrase, saltBytes);
+                const cipherBuf = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv },
+                    key,
+                    enc.encode(plaintext)
+                );
+                const combined = new Uint8Array(saltBytes.length + iv.length + cipherBuf.byteLength);
+                combined.set(saltBytes, 0);
+                combined.set(iv, saltBytes.length);
+                combined.set(new Uint8Array(cipherBuf), saltBytes.length + iv.length);
+                return btoa(String.fromCharCode(...combined));
+            },
+
+            async decrypt(cipherB64, passphrase) {
+                const combined = Uint8Array.from(atob(cipherB64), c => c.charCodeAt(0));
+                const saltBytes = combined.slice(0, 16);
+                const iv = combined.slice(16, 28);
+                const data = combined.slice(28);
+                const key = await this.deriveKey(passphrase, saltBytes);
+                const plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+                return new TextDecoder().decode(plainBuf);
+            },
+
+            async hashPassword(password, saltBytes) {
+                const enc = new TextEncoder();
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']
+                );
+                const bits = await crypto.subtle.deriveBits(
+                    { name: 'PBKDF2', salt: saltBytes, iterations: this.PBKDF2_ITERATIONS, hash: 'SHA-256' },
+                    keyMaterial, 256
+                );
+                return btoa(String.fromCharCode(...new Uint8Array(bits)));
+            },
+
+            getStaticSalt() {
+                return Uint8Array.from(this.APP_SALT.split('').map(c => c.charCodeAt(0)));
+            }
+        };
+
         // ═══════════════════════ CONSTANTES ═══════════════════════
-        const MIN_AGE=10,USERS_KEY='grimoire_users',SESSION_KEY='grimoire_session',AGE_KEY='grimoire_age_verified',BG_KEY='grimoire_background';
+        const MIN_AGE=10,USERS_KEY='grimoire_users_v2',SESSION_KEY='grimoire_session_v2',AGE_KEY='grimoire_age_verified',BG_KEY='grimoire_background';
 
         const CATEGORIES=[
             {id:'retrato',icon:'🎭',name:'Retratos'},{id:'combate_galeria',icon:'🖼️',name:'Batalhas'},
@@ -548,24 +636,51 @@
             {name:'Caverna Cristalina',type:'gradient',value:'linear-gradient(135deg,#1a0a2a 0%,#2a1a5a 40%,#4a2a8a 70%,#1a0a3a 100%)'},{name:'Montanhas',type:'gradient',value:'linear-gradient(to bottom,#1a1a3a 0%,#0d0d2a 50%,#0a0a1a 100%)'},
         ];
 
-        const ALL_TABS=[...SHEET_TABS,{id:'dados',icon:'🎲',name:'Dados'},...CATEGORIES];
+        const ALL_TABS=[...SHEET_TABS,{id:'dados',icon:'🎲',name:'Dados'},{id:'musicas',icon:'🎵',name:'Músicas'},...CATEGORIES];
 
         // ═══════════════════════ ESTADO ═══════════════════════
         let appData={characters:{},activeId:null},activeCharId=null,activeTab='atributos',hasUnsavedChanges=false,tempBgImage=null,modalCallback=null;
         let diceState={selectedType:20,quantity:1,modifier:0,mode:'normal',history:[],lastResult:null};
         let currentMsgImgIdx=null;
+        let musicState={playlist:[],currentIdx:-1,isPlaying:false,volume:0.7,shuffle:false,repeat:'none'};
+        let audioEl=null;
+        let vizInterval=null;
+        let currentUserPassphrase=null;
 
-        function getGrimoireKey(){const s=getSession();return s?'grimoire_data_'+s.email.replace(/[^a-zA-Z0-9]/g,'_'):'grimoire_data_anon';}
-        function loadGrimoireData(){try{const r=localStorage.getItem(getGrimoireKey());return r?JSON.parse(r):{characters:{},activeId:null};}catch{return{characters:{},activeId:null};}}
-        function saveGrimoireData(d){localStorage.setItem(getGrimoireKey(),JSON.stringify(d));}
+        function getUserPassphrase(email){return 'grimorio_user_'+email.toLowerCase().trim()+'_key_2026';}
+
+        function getGrimoireKey(){const s=getSession();return s?'grimoire_data_v2_'+s.email.replace(/[^a-zA-Z0-9]/g,'_'):'grimoire_data_anon';}
+
+        async function loadGrimoireData(){
+            try{
+                const raw=localStorage.getItem(getGrimoireKey());
+                if(!raw)return{characters:{},activeId:null};
+                if(!currentUserPassphrase)return{characters:{},activeId:null};
+                const decrypted=await CRYPTO.decrypt(raw,currentUserPassphrase);
+                return JSON.parse(decrypted);
+            }catch(e){console.warn('Dados criptografados ilegíveis ou corrompidos:',e);return{characters:{},activeId:null};}
+        }
+
+        async function saveGrimoireData(d){
+            if(!currentUserPassphrase)return;
+            try{
+                const encrypted=await CRYPTO.encrypt(JSON.stringify(d),currentUserPassphrase);
+                localStorage.setItem(getGrimoireKey(),encrypted);
+            }catch(e){console.error('Erro ao criptografar dados:',e);}
+        }
+
         function getUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY))||{};}catch{return{};}}
         function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
         function getSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY));}catch{return null;}}
-        function saveSession(ud){localStorage.setItem(SESSION_KEY,JSON.stringify({email:ud.email,name:ud.name,loggedAt:new Date().toISOString()}));}
-        function clearSession(){localStorage.removeItem(SESSION_KEY);}
+        async function saveSession(ud){
+            const payload={email:ud.email,name:ud.name,loggedAt:new Date().toISOString(),token:btoa(Math.random().toString(36)+Date.now())};
+            const encrypted=await CRYPTO.encrypt(JSON.stringify(payload),getUserPassphrase(ud.email));
+            localStorage.setItem(SESSION_KEY,JSON.stringify({enc:encrypted,email:ud.email}));
+        }
+        function clearSession(){localStorage.removeItem(SESSION_KEY);currentUserPassphrase=null;}
 
         function createEmptyCharacter(name){
-            const d={name,ficha:{},notes:{},images:{},messages:{},sheet:initSheet()};
+            const d={name,ficha:{},notes:{},images:{},messages:{},sheet:initSheet(),music:{playlist:[],volume:0.7}};
             CATEGORIES.forEach(c=>{d.images[c.id]=[];d.messages[c.id]=[];});
             return d;
         }
@@ -588,13 +703,50 @@
         function showStage(sid){document.querySelectorAll('.stage').forEach(s=>s.classList.remove('active'));document.getElementById(sid).classList.add('active');const b=document.body;if(sid==='stageGrimoire'){b.classList.remove('auth-mode');b.classList.add('grimoire-mode');}else{b.classList.remove('grimoire-mode');b.classList.add('auth-mode');}}
         document.getElementById('birthDate').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();verifyAge();}});
 
-        // ═══════════ LOGIN ═══════════
+        // ═══════════ LOGIN (com criptografia) ═══════════
         function showRegister(){document.getElementById('loginForm').style.display='none';document.getElementById('registerForm').style.display='block';document.getElementById('loginError').textContent='';document.getElementById('regError').textContent='';}
         function showLogin(){document.getElementById('registerForm').style.display='none';document.getElementById('loginForm').style.display='block';document.getElementById('regError').textContent='';document.getElementById('loginError').textContent='';}
-        function doRegister(){const n=document.getElementById('regName').value.trim(),em=document.getElementById('regEmail').value.trim().toLowerCase(),pw=document.getElementById('regPassword').value,cf=document.getElementById('regConfirm').value,er=document.getElementById('regError');er.textContent='';if(!n){er.textContent='⚠️ Informe seu nome.';return;}if(!em){er.textContent='⚠️ Informe seu email.';return;}if(!em.includes('@')||!em.includes('.')){er.textContent='⚠️ Email inválido.';return;}if(pw.length<6){er.textContent='⚠️ A senha deve ter pelo menos 6 caracteres.';return;}if(pw!==cf){er.textContent='⚠️ As senhas não coincidem.';return;}const u=getUsers();if(u[em]){er.textContent='⚠️ Este email já está cadastrado.';return;}u[em]={name:n,email:em,password:pw,createdAt:new Date().toISOString()};saveUsers(u);saveSession({name:n,email:em});enterGrimoire(n);}
-        function doLogin(){const em=document.getElementById('loginEmail').value.trim().toLowerCase(),pw=document.getElementById('loginPassword').value,er=document.getElementById('loginError');er.textContent='';if(!em){er.textContent='️ Informe seu email.';return;}if(!pw){er.textContent='⚠️ Informe sua senha.';return;}const u=getUsers(),usr=u[em];if(!usr){er.textContent='⚠️ Email não encontrado.';return;}if(usr.password!==pw){er.textContent='⚠️ Senha incorreta.';return;}saveSession({name:usr.name,email:usr.email});enterGrimoire(usr.name);}
+
+        async function doRegister(){
+            const n=document.getElementById('regName').value.trim(),em=document.getElementById('regEmail').value.trim().toLowerCase(),pw=document.getElementById('regPassword').value,cf=document.getElementById('regConfirm').value,er=document.getElementById('regError');
+            er.textContent='';
+            if(!n){er.textContent='⚠️ Informe seu nome.';return;}
+            if(!em){er.textContent='⚠️ Informe seu email.';return;}
+            if(!em.includes('@')||!em.includes('.')){er.textContent='⚠️ Email inválido.';return;}
+            if(pw.length<6){er.textContent='⚠️ A senha deve ter pelo menos 6 caracteres.';return;}
+            if(pw!==cf){er.textContent='⚠️ As senhas não coincidem.';return;}
+            const u=getUsers();
+            if(u[em]){er.textContent='⚠️ Este email já está cadastrado.';return;}
+            try{
+                const saltBytes=CRYPTO.getStaticSalt();
+                const hashedPw=await CRYPTO.hashPassword(pw,saltBytes);
+                u[em]={name:n,email:em,passwordHash:hashedPw,salt:btoa(String.fromCharCode(...saltBytes)),createdAt:new Date().toISOString(),version:2};
+                saveUsers(u);
+                await saveSession({name:n,email:em});
+                currentUserPassphrase=getUserPassphrase(em);
+                enterGrimoire(n);
+            }catch(e){er.textContent='❌ Erro ao criar conta.';console.error(e);}
+        }
+
+        async function doLogin(){
+            const em=document.getElementById('loginEmail').value.trim().toLowerCase(),pw=document.getElementById('loginPassword').value,er=document.getElementById('loginError');
+            er.textContent='';
+            if(!em){er.textContent='⚠️ Informe seu email.';return;}
+            if(!pw){er.textContent='⚠️ Informe sua senha.';return;}
+            const u=getUsers(),usr=u[em];
+            if(!usr){er.textContent='⚠️ Email não encontrado.';return;}
+            try{
+                const saltBytes=usr.salt?Uint8Array.from(atob(usr.salt),c=>c.charCodeAt(0)):CRYPTO.getStaticSalt();
+                const hashedPw=await CRYPTO.hashPassword(pw,saltBytes);
+                if(usr.passwordHash!==hashedPw){er.textContent='⚠️ Senha incorreta.';return;}
+                await saveSession({name:usr.name,email:usr.email});
+                currentUserPassphrase=getUserPassphrase(em);
+                enterGrimoire(usr.name);
+            }catch(e){er.textContent='❌ Erro ao autenticar.';console.error(e);}
+        }
+
         function enterGrimoire(name){document.getElementById('loggedUserName').textContent=name;applySavedBackground();initGrimoire();showStage('stageGrimoire');}
-        function doLogout(){clearSession();localStorage.removeItem(AGE_KEY);['loginEmail','loginPassword','regName','regEmail','regPassword','regConfirm'].forEach(id=>document.getElementById(id).value='');['loginError','regError'].forEach(id=>document.getElementById(id).textContent='');showLogin();showStage('stageAge');}
+        function doLogout(){stopMusic();clearSession();localStorage.removeItem(AGE_KEY);['loginEmail','loginPassword','regName','regEmail','regPassword','regConfirm'].forEach(id=>document.getElementById(id).value='');['loginError','regError'].forEach(id=>document.getElementById(id).textContent='');showLogin();showStage('stageAge');}
         ['loginEmail','loginPassword'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doLogin();}}));
         ['regName','regEmail','regPassword','regConfirm'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doRegister();}}));
 
@@ -618,7 +770,7 @@
         function applyBgUrl(){const url=document.getElementById('bgUrlInput').value.trim();if(!url){showToast('⚠️ Informe uma URL!');return;}const bg={type:'url',value:url,overlay:parseInt(document.getElementById('bgOpacity').value)};saveBackground(bg);applyBackgroundStyle(bg);renderThemeGrid();updateThemePreview();document.getElementById('bgUrlInput').value='';showToast('✅ URL aplicada!');}
 
         // ═══════════ GRIMÓRIO ═══════════
-        function initGrimoire(){appData=loadGrimoireData();if(Object.keys(appData.characters).length===0){const id='char_'+Date.now();appData.characters[id]=createEmptyCharacter('Meu Personagem');appData.activeId=id;saveGrimoireData(appData);}activeCharId=appData.activeId||Object.keys(appData.characters)[0];hasUnsavedChanges=false;renderAllGrimoire();}
+        async function initGrimoire(){appData=await loadGrimoireData();if(Object.keys(appData.characters).length===0){const id='char_'+Date.now();appData.characters[id]=createEmptyCharacter('Meu Personagem');appData.activeId=id;await saveGrimoireData(appData);}activeCharId=appData.activeId||Object.keys(appData.characters)[0];hasUnsavedChanges=false;loadMusicState();renderAllGrimoire();}
         function renderAllGrimoire(){renderCharSelector();renderTabs();renderPanels();updateSaveStatus();}
         function renderCharSelector(){const s=document.getElementById('charSelect');s.innerHTML=Object.entries(appData.characters).map(([id,ch])=>`<option value="${id}" ${id===activeCharId?'selected':''}>${ch.name||'Sem nome'}</option>`).join('');}
         function renderTabs(){
@@ -629,7 +781,6 @@
 
         function getSheet(){return ensureSheet(getCurrentChar());}
 
-        // ═══════════ RENDER DOS PAINÉIS ═══════════
         function renderPanels(){
             const container=document.getElementById('panelsContainer'),ch=getCurrentChar();if(!ch)return;
             let html='';
@@ -638,9 +789,11 @@
             html+=renderStatusPanel();
             html+=renderFichaPanel();
             html+=renderDicePanel();
+            html+=renderMusicPanel();
             CATEGORIES.forEach(cat=>{html+=renderGalleryPanel(cat);});
             container.innerHTML=html;
             if(activeTab==='dados')renderDiceHistory();
+            if(activeTab==='musicas')initMusicPlayer();
         }
 
         function renderAttrsPanel(){
@@ -676,12 +829,12 @@
             const infoHTML=`<div class="section-title">📜 Informações Básicas</div><div class="info-grid">
                 ${[{id:'nome',l:'👤 Nome',p:'Nome do personagem'},{id:'classe',l:'⚔️ Classe',p:'Guerreiro, Mago...'},{id:'raca',l:' Raça',p:'Humano, Elfo...'},{id:'antecedente',l:' Antecedente',p:'Nobre, Soldado...'},{id:'alinhamento',l:'️ Alinhamento',p:'Leal e Bom...'},{id:'jogador',l:' Jogador',p:'Seu nome'}].map(f=>`<div class="info-field"><label>${f.l}</label><input type="text" id="sf_${f.id}" value="${(ch.ficha[f.id]||'').replace(/"/g,'&quot;')}" placeholder="${f.p}" oninput="updSheetField('info','${f.id}',this.value)"></div>`).join('')}
             </div>`;
-            const attacksHTML=`<details open><summary>⚔️ Ataques & Ações</summary><div class="details-content"><div id="attacksArea">${(s.attacks||[]).map((a,i)=>`<div class="list-item"><input type="text" placeholder="Nome do ataque" value="${a.name||''}" oninput="updSheetNested('attacks',${i},'name',this.value)"><div style="display:flex;gap:4px;align-items:center;"><input type="text" class="mini-input" placeholder="Bônus" value="${a.bonus||''}" oninput="updSheetNested('attacks',${i},'bonus',this.value)"><input type="text" class="mini-input" placeholder="Dano" value="${a.dmg||''}" oninput="updSheetNested('attacks',${i},'dmg',this.value)"><button class="btn-mini" onclick="rmSheetItem('attacks',${i})">✕</button></div></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('attacks')">+ Adicionar Ataque</button></div></details>`;
-            const spellsHTML=`<details open><summary>🔮 Magias</summary><div class="details-content"><div class="slots-grid">${SLOT_LEVELS.map(l=>`<div class="slot-box"><div class="slot-level">${l} Nível</div><input type="text" placeholder="x/x" value="${s.slots[l]||''}" oninput="updSheetSlot('${l}',this.value)"></div>`).join('')}</div><hr class="divider"><div id="spellsArea">${(s.spells||[]).map((sp,i)=>`<div class="list-item"><input type="text" placeholder="Nome da magia" value="${sp||''}" oninput="updSheetArr('spells',${i},this.value)"><button class="btn-mini" onclick="rmSheetItem('spells',${i})">✕</button></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('spells')">+ Adicionar Magia</button></div></details>`;
-            const equipHTML=`<details open><summary>🎒 Equipamentos & Moedas</summary><div class="details-content"><div id="equipsArea">${(s.equips||[]).map((e,i)=>`<div class="list-item"><input type="text" placeholder="Nome do item" value="${e||''}" oninput="updSheetArr('equips',${i},this.value)"><button class="btn-mini" onclick="rmSheetItem('equips',${i})">✕</button></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('equips')">+ Adicionar Item</button><hr class="divider"><div class="info-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:0;">${[{id:'ouro',l:'💰 PO'},{id:'prata',l:'🪙 PP'},{id:'electro',l:'🟤 PE'},{id:'cobre',l:'🥉 PC'},{id:'platina',l:'💎 PL'}].map(m=>`<div class="info-field"><label>${m.l}</label><input type="text" id="sc_${m.id}" value="${s.combat[m.id]||''}" placeholder="0" oninput="updSheetField('combat','${m.id}',this.value)"></div>`).join('')}</div></div></details>`;
-            const traitsHTML=`<details open><summary>🌟 Traços & Habilidades</summary><div class="details-content"><div id="traitsArea">${(s.traits||[]).map((t,i)=>`<div class="list-item"><input type="text" placeholder="Traço ou habilidade" value="${t||''}" oninput="updSheetArr('traits',${i},this.value)"><button class="btn-mini" onclick="rmSheetItem('traits',${i})">✕</button></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('traits')">+ Adicionar Traço</button></div></details>`;
-            const resistHTML=`<details open><summary>🔰 Resistências & Outros</summary><div class="details-content"><div class="info-grid" style="margin-bottom:0;">${[{id:'resist',l:'🟢 Resistências',p:'Fogo, Frio...'},{id:'imun',l:'🔵 Imunidades',p:'Veneno...'},{id:'vuln',l:'🔴 Vulnerabilidades',p:'Necrótico...'},{id:'idiomas',l:'🗣️ Idiomas',p:'Comum, Élfico...'}].map(r=>`<div class="info-field"><label>${r.l}</label><input type="text" id="sc_${r.id}" value="${s.combat[r.id]||''}" placeholder="${r.p}" oninput="updSheetField('combat','${r.id}',this.value)"></div>`).join('')}</div></div></details>`;
-            const notesHTML=`<details open><summary>📝 Notas da Campanha</summary><div class="details-content"><textarea class="notes-area" id="sheetNotes" placeholder="Anotações da campanha..." oninput="updSheetNotes(this.value)">${s.notes||''}</textarea></div></details>`;
+            const attacksHTML=`<details><summary>⚔️ Ataques & Ações</summary><div class="details-content"><div id="attacksArea">${(s.attacks||[]).map((a,i)=>`<div class="list-item"><input type="text" placeholder="Nome do ataque" value="${a.name||''}" oninput="updSheetNested('attacks',${i},'name',this.value)"><div style="display:flex;gap:4px;align-items:center;"><input type="text" class="mini-input" placeholder="Bônus" value="${a.bonus||''}" oninput="updSheetNested('attacks',${i},'bonus',this.value)"><input type="text" class="mini-input" placeholder="Dano" value="${a.dmg||''}" oninput="updSheetNested('attacks',${i},'dmg',this.value)"><button class="btn-mini" onclick="rmSheetItem('attacks',${i})">✕</button></div></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('attacks')">+ Adicionar Ataque</button></div></details>`;
+            const spellsHTML=`<details><summary>🔮 Magias</summary><div class="details-content"><div class="slots-grid">${SLOT_LEVELS.map(l=>`<div class="slot-box"><div class="slot-level">${l} Nível</div><input type="text" placeholder="x/x" value="${s.slots[l]||''}" oninput="updSheetSlot('${l}',this.value)"></div>`).join('')}</div><hr class="divider"><div id="spellsArea">${(s.spells||[]).map((sp,i)=>`<div class="list-item"><input type="text" placeholder="Nome da magia" value="${sp||''}" oninput="updSheetArr('spells',${i},this.value)"><button class="btn-mini" onclick="rmSheetItem('spells',${i})">✕</button></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('spells')">+ Adicionar Magia</button></div></details>`;
+            const equipHTML=`<details><summary>🎒 Equipamentos & Moedas</summary><div class="details-content"><div id="equipsArea">${(s.equips||[]).map((e,i)=>`<div class="list-item"><input type="text" placeholder="Nome do item" value="${e||''}" oninput="updSheetArr('equips',${i},this.value)"><button class="btn-mini" onclick="rmSheetItem('equips',${i})">✕</button></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('equips')">+ Adicionar Item</button><hr class="divider"><div class="info-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:0;">${[{id:'ouro',l:'💰 PO'},{id:'prata',l:'🪙 PP'},{id:'electro',l:'🟤 PE'},{id:'cobre',l:'🥉 PC'},{id:'platina',l:'💎 PL'}].map(m=>`<div class="info-field"><label>${m.l}</label><input type="text" id="sc_${m.id}" value="${s.combat[m.id]||''}" placeholder="0" oninput="updSheetField('combat','${m.id}',this.value)"></div>`).join('')}</div></div></details>`;
+            const traitsHTML=`<details><summary>🌟 Traços & Habilidades</summary><div class="details-content"><div id="traitsArea">${(s.traits||[]).map((t,i)=>`<div class="list-item"><input type="text" placeholder="Traço ou habilidade" value="${t||''}" oninput="updSheetArr('traits',${i},this.value)"><button class="btn-mini" onclick="rmSheetItem('traits',${i})">✕</button></div>`).join('')}</div><button class="btn-add" onclick="addSheetItem('traits')">+ Adicionar Traço</button></div></details>`;
+            const resistHTML=`<details><summary>🔰 Resistências & Outros</summary><div class="details-content"><div class="info-grid" style="margin-bottom:0;">${[{id:'resist',l:'🟢 Resistências',p:'Fogo, Frio...'},{id:'imun',l:'🔵 Imunidades',p:'Veneno...'},{id:'vuln',l:'🔴 Vulnerabilidades',p:'Necrótico...'},{id:'idiomas',l:'🗣️ Idiomas',p:'Comum, Élfico...'}].map(r=>`<div class="info-field"><label>${r.l}</label><input type="text" id="sc_${r.id}" value="${s.combat[r.id]||''}" placeholder="${r.p}" oninput="updSheetField('combat','${r.id}',this.value)"></div>`).join('')}</div></div></details>`;
+            const notesHTML=`<details><summary>📝 Notas da Campanha</summary><div class="details-content"><textarea class="notes-area" id="sheetNotes" placeholder="Anotações da campanha..." oninput="updSheetNotes(this.value)">${s.notes||''}</textarea></div></details>`;
             return`<div class="ficha-panel ${activeTab==='ficha'?'active':''}" data-panel="ficha">${infoHTML}${attacksHTML}${spellsHTML}${equipHTML}${traitsHTML}${resistHTML}${notesHTML}</div>`;
         }
 
@@ -704,6 +857,83 @@
             </div>`;
         }
 
+        function renderMusicPanel(){
+            const ch=getCurrentChar();
+            if(!ch.music)ch.music={playlist:[],volume:0.7};
+            const pl=ch.music.playlist||[];
+            const items=pl.map((track,i)=>{
+                const isActive=i===musicState.currentIdx;
+                const isPlaying=isActive&&musicState.isPlaying;
+                return`<div class="playlist-item ${isActive?'active':''} ${isPlaying?'playing':''}" onclick="playTrack(${i})" data-idx="${i}">
+                    <span class="track-number">${isPlaying?'♪':(i+1)}</span>
+                    <div class="track-info">
+                        <div class="track-title">${escapeHTML(track.name||'Sem nome')}</div>
+                        <div class="track-meta">${track.type==='url'?'🔗 URL':'📁 Arquivo'}${track.duration?' • '+formatTime(track.duration):''}</div>
+                    </div>
+                    <span class="track-duration">${track.duration?formatTime(track.duration):'--:--'}</span>
+                    <div class="track-actions">
+                        <button onclick="event.stopPropagation();renameTrack(${i})" title="Renomear">✏️</button>
+                        <button class="del-btn" onclick="event.stopPropagation();removeTrack(${i})" title="Remover">🗑️</button>
+                    </div>
+                </div>`;
+            }).join('');
+            const emptyHTML=pl.length===0?`<div class="playlist-empty"><div class="empty-icon">🎵</div><p>Sua playlist está vazia.<br>Adicione músicas por URL ou faça upload de arquivos de áudio!</p></div>`:'';
+            return`<div class="music-panel ${activeTab==='musicas'?'active':''}" data-panel="musicas">
+                <div class="section-title">🎵 Taverna Sonora</div>
+                <div class="music-container">
+                    <div class="player-section" id="playerSection">
+                        <div class="player-disc" id="playerDisc"><div class="disc-grooves"></div></div>
+                        <div class="music-visualizer" id="musicViz">${Array(12).fill(0).map((_,i)=>`<div class="viz-bar" style="--h:${8+Math.random()*18}px;animation-delay:${(i*0.08).toFixed(2)}s"></div>`).join('')}</div>
+                        <div class="player-title">
+                            <div class="track-name" id="trackNameDisplay">Nenhuma música</div>
+                            <div class="track-artist" id="trackArtistDisplay">Selecione uma faixa</div>
+                        </div>
+                        <div class="player-progress">
+                            <div class="progress-bar" id="progressBar" onclick="seekMusic(event)">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <div class="progress-times">
+                                <span id="currentTime">0:00</span>
+                                <span id="totalTime">0:00</span>
+                            </div>
+                        </div>
+                        <div class="player-controls">
+                            <button class="ctrl-btn ${musicState.shuffle?'active':''}" onclick="toggleShuffle()" title="Aleatório">🔀</button>
+                            <button class="ctrl-btn" onclick="prevTrack()" title="Anterior">⏮️</button>
+                            <button class="ctrl-btn play-btn" id="playBtn" onclick="togglePlay()" title="Play/Pause">▶️</button>
+                            <button class="ctrl-btn" onclick="nextTrack()" title="Próxima">⏭️</button>
+                            <button class="ctrl-btn ${musicState.repeat!=='none'?'active':''}" onclick="toggleRepeat()" title="Repetir">${musicState.repeat==='one'?'🔂':'🔁'}</button>
+                        </div>
+                        <div class="player-volume">
+                            <span class="vol-icon" onclick="toggleMute()">${musicState.volume===0?'🔇':musicState.volume<0.5?'🔉':'🔊'}</span>
+                            <input type="range" min="0" max="100" value="${Math.round(musicState.volume*100)}" id="volumeSlider" oninput="setVolume(this.value/100)">
+                            <span class="vol-value" id="volValue">${Math.round(musicState.volume*100)}%</span>
+                        </div>
+                    </div>
+                    <div class="playlist-section">
+                        <div class="playlist-header">
+                            <h3>📜 Playlist (${pl.length})</h3>
+                            <div class="playlist-actions">
+                                <button onclick="document.getElementById('hiddenMusicInput').click()">📁 Upload</button>
+                                <button onclick="addTrackByUrl()">🔗 URL</button>
+                                <button onclick="clearPlaylist()">🧹 Limpar</button>
+                            </div>
+                        </div>
+                        <div class="playlist-list" id="playlistList">${items}${emptyHTML}</div>
+                        <div class="add-music-section">
+                            <div class="add-music-row">
+                                <input type="text" id="trackUrlInput" placeholder="Cole uma URL de áudio (MP3, WAV, OGG...)" onkeydown="if(event.key==='Enter')addTrackByUrl()">
+                                <button onclick="addTrackByUrl()">➕ Adicionar</button>
+                            </div>
+                            <div class="add-music-row">
+                                <input type="text" id="trackNameInput" placeholder="Nome da faixa (opcional)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }
+
         function renderGalleryPanel(cat){
             const ch=getCurrentChar();const imgs=ch.images[cat.id]||[];const msgs=ch.messages?.[cat.id]||[];
             const isDivulg=cat.id==='divulgacoes';
@@ -718,7 +948,6 @@
             return`<div class="gallery-panel ${cat.id===activeTab?'active':''}" data-panel="${cat.id}"><div class="image-grid">${cards}<div class="add-card" onclick="switchTab('${cat.id}');triggerUpload();"><span class="plus">+</span></div></div><div class="category-notes"><label>📝 Anotações – ${cat.name}</label><textarea placeholder="Anotações sobre ${cat.name.toLowerCase()}..." oninput="updateCategoryNote('${cat.id}',this)">${note}</textarea></div></div>`;
         }
 
-        // ═══════════ UPDATES DA FICHA ═══════════
         function updSheetField(type,key,val){if(type==='combat')getSheet().combat[key]=val;else if(type==='info')getCurrentChar().ficha[key]=val;markUnsaved();if(key==='prof')setTimeout(()=>{if(activeTab==='pericias'){const p=document.querySelector('[data-panel="pericias"]');if(p)p.innerHTML=renderSkillsPanel().replace(/.*?data-panel="pericias"[^>]*>/,'').replace(/<\/div>\s*$/,'');}});}
         function updSheetAttr(id,val){const s=getSheet();s.attrs[id]=val;const c=document.getElementById('sm_'+id);if(c){const h=modHTML(val,id);if(c.innerHTML!==h){c.innerHTML=h;const sp=c.querySelector('.attr-mod');if(sp){sp.classList.add('pop');setTimeout(()=>sp.classList.remove('pop'),350);}}}if(activeTab==='pericias')refreshSkillsPanel();markUnsaved();}
         function updHPDisplay(){const s=getSheet();const cur=parseInt(s.combat.hpCur)||0,max=parseInt(s.combat.hpMax)||0,pct=max>0?Math.min(100,Math.max(0,(cur/max)*100)):0;const d=document.getElementById('hpDisplay');if(d)d.textContent=cur+'/'+max;const b=document.getElementById('hpBarFill');if(b)b.style.width=pct+'%';}
@@ -731,16 +960,14 @@
         function addSheetItem(arrName){const s=getSheet();if(arrName==='attacks')s.attacks.push({name:'',bonus:'',dmg:''});else s[arrName].push('');renderPanels();markUnsaved();}
         function rmSheetItem(arrName,i){getSheet()[arrName].splice(i,1);renderPanels();markUnsaved();}
 
-        // ══════════ GALERIA ═══════════
         function updateCategoryNote(catId,el){getCurrentChar().notes[catId]=el.value;markUnsaved();}
         function updateImageCaption(catId,idx,el){const img=getCurrentChar().images[catId][idx];if(typeof img==='string')getCurrentChar().images[catId][idx]={src:img,caption:el.value};else img.caption=el.value;markUnsaved();}
-        function triggerUpload(){const sheetTabIds=SHEET_TABS.map(t=>t.id);if(sheetTabIds.includes(activeTab)||activeTab==='dados')switchTab(CATEGORIES[0].id);document.getElementById('hiddenFileInput').click();}
-        function handleFileSelect(e){const files=e.target.files;if(!files.length)return;const sheetTabIds=SHEET_TABS.map(t=>t.id);const catId=(sheetTabIds.includes(activeTab)||activeTab==='dados')?CATEGORIES[0].id:activeTab;const ch=getCurrentChar();const prs=[];for(const f of files){prs.push(new Promise(r=>{const rd=new FileReader();rd.onload=()=>r({src:rd.result,caption:''});rd.readAsDataURL(f);}));}Promise.all(prs).then(res=>{ch.images[catId].push(...res);markUnsaved();renderPanels();});e.target.value='';}
+        function triggerUpload(){const sheetTabIds=SHEET_TABS.map(t=>t.id);if(sheetTabIds.includes(activeTab)||activeTab==='dados'||activeTab==='musicas')switchTab(CATEGORIES[0].id);document.getElementById('hiddenFileInput').click();}
+        function handleFileSelect(e){const files=e.target.files;if(!files.length)return;const sheetTabIds=SHEET_TABS.map(t=>t.id);const catId=(sheetTabIds.includes(activeTab)||activeTab==='dados'||activeTab==='musicas')?CATEGORIES[0].id:activeTab;const ch=getCurrentChar();const prs=[];for(const f of files){prs.push(new Promise(r=>{const rd=new FileReader();rd.onload=()=>r({src:rd.result,caption:''});rd.readAsDataURL(f);}));}Promise.all(prs).then(res=>{ch.images[catId].push(...res);markUnsaved();renderPanels();});e.target.value='';}
         function removeImage(catId,idx){getCurrentChar().images[catId].splice(idx,1);if(getCurrentChar().messages?.[catId])getCurrentChar().messages[catId].splice(idx,1);markUnsaved();renderPanels();}
         function openLightbox(catId,idx){const img=getCurrentChar().images[catId][idx];document.getElementById('lightboxImg').src=typeof img==='string'?img:img.src;document.getElementById('lightbox').classList.remove('hidden');}
         function closeLightbox(){document.getElementById('lightbox').classList.add('hidden');}
 
-        // ═══════════ MENSAGENS DAS DIVULGAÇÕES ═══════════
         function openMsgModal(catId,imgIdx){
             currentMsgImgIdx=imgIdx;
             const ch=getCurrentChar();
@@ -791,27 +1018,329 @@
         }
         function escapeHTML(str){return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 
-        // ══════════ SALVAR ═══════════
-        function markUnsaved(){hasUnsavedChanges=true;updateSaveStatus();clearTimeout(window._autoSaveTimer);window._autoSaveTimer=setTimeout(()=>{saveGrimoireData(appData);hasUnsavedChanges=false;updateSaveStatus();},1500);}
-        function updateSaveStatus(){const el=document.getElementById('saveStatus');if(hasUnsavedChanges){el.textContent=' Salvando...';el.classList.remove('saved');}else{el.textContent='✅ Tudo salvo';el.classList.add('saved');}}
-        function saveCurrentCharacter(){saveGrimoireData(appData);hasUnsavedChanges=false;updateSaveStatus();showToast('✅ Personagem "'+(getCurrentChar()?.name||'Sem nome')+'" salvo!');}
+        function loadMusicState(){
+            const ch=getCurrentChar();
+            if(!ch)return;
+            if(!ch.music)ch.music={playlist:[],volume:0.7};
+            musicState.playlist=ch.music.playlist||[];
+            musicState.volume=ch.music.volume??0.7;
+            musicState.currentIdx=-1;
+            musicState.isPlaying=false;
+        }
+        function saveMusicState(){
+            const ch=getCurrentChar();
+            if(!ch)return;
+            if(!ch.music)ch.music={playlist:[],volume:musicState.volume};
+            ch.music.playlist=musicState.playlist;
+            ch.music.volume=musicState.volume;
+            markUnsaved();
+        }
+        function initMusicPlayer(){
+            if(!audioEl){
+                audioEl=new Audio();
+                audioEl.addEventListener('timeupdate',updateProgress);
+                audioEl.addEventListener('loadedmetadata',()=>{
+                    if(musicState.currentIdx>=0&&musicState.playlist[musicState.currentIdx]){
+                        musicState.playlist[musicState.currentIdx].duration=audioEl.duration;
+                        saveMusicState();
+                        updatePlaylistUI();
+                    }
+                    const td=document.getElementById('totalTime');
+                    if(td)td.textContent=formatTime(audioEl.duration);
+                });
+                audioEl.addEventListener('ended',onTrackEnd);
+                audioEl.addEventListener('error',()=>{showToast('❌ Erro ao carregar áudio');musicState.isPlaying=false;updatePlayButton();});
+            }
+            audioEl.volume=musicState.volume;
+            updatePlayerDisplay();
+            startVisualizer();
+        }
+        function addTrackByUrl(){
+            const urlInput=document.getElementById('trackUrlInput');
+            const nameInput=document.getElementById('trackNameInput');
+            const url=urlInput.value.trim();
+            if(!url){showToast('⚠️ Cole uma URL de áudio!');return;}
+            const name=nameInput.value.trim()||extractNameFromUrl(url);
+            musicState.playlist.push({name,url,type:'url',duration:0});
+            saveMusicState();
+            urlInput.value='';
+            nameInput.value='';
+            updatePlaylistUI();
+            showToast('✅ Música adicionada!');
+        }
+        function extractNameFromUrl(url){
+            try{
+                const parts=url.split('/');
+                const last=parts[parts.length-1].split('?')[0];
+                return decodeURIComponent(last.replace(/\.[^/.]+$/,''))||'Faixa sem nome';
+            }catch{return 'Faixa sem nome';}
+        }
+        function handleMusicUpload(e){
+            const files=e.target.files;
+            if(!files.length)return;
+            const ch=getCurrentChar();
+            if(!ch.music)ch.music={playlist:[],volume:musicState.volume};
+            let count=0;
+            for(const f of files){
+                if(!f.type.startsWith('audio/'))continue;
+                const reader=new FileReader();
+                reader.onload=()=>{
+                    musicState.playlist.push({name:f.name.replace(/\.[^/.]+$/,''),src:reader.result,type:'file',duration:0});
+                    count++;
+                    if(count===files.length){
+                        saveMusicState();
+                        updatePlaylistUI();
+                        showToast(`✅ ${count} música(s) adicionada(s)!`);
+                    }
+                };
+                reader.readAsDataURL(f);
+            }
+            e.target.value='';
+        }
+        function playTrack(idx){
+            if(idx<0||idx>=musicState.playlist.length)return;
+            musicState.currentIdx=idx;
+            const track=musicState.playlist[idx];
+            const src=track.type==='url'?track.url:track.src;
+            if(!src){showToast('❌ Fonte de áudio inválida');return;}
+            audioEl.src=src;
+            audioEl.play().then(()=>{
+                musicState.isPlaying=true;
+                updatePlayButton();
+                updatePlayerDisplay();
+                updatePlaylistUI();
+                startVisualizer();
+            }).catch(err=>{
+                console.error(err);
+                showToast('❌ Não foi possível reproduzir');
+                musicState.isPlaying=false;
+                updatePlayButton();
+            });
+        }
+        function togglePlay(){
+            if(musicState.currentIdx<0){
+                if(musicState.playlist.length>0)playTrack(0);
+                return;
+            }
+            if(musicState.isPlaying){
+                audioEl.pause();
+                musicState.isPlaying=false;
+                stopVisualizer();
+            }else{
+                audioEl.play().catch(()=>showToast('❌ Erro ao reproduzir'));
+                musicState.isPlaying=true;
+                startVisualizer();
+            }
+            updatePlayButton();
+            updatePlayerDisplay();
+        }
+        function stopMusic(){
+            if(audioEl){audioEl.pause();audioEl.currentTime=0;}
+            musicState.isPlaying=false;
+            stopVisualizer();
+            updatePlayButton();
+            updatePlayerDisplay();
+        }
+        function nextTrack(){
+            if(musicState.playlist.length===0)return;
+            let next;
+            if(musicState.shuffle){
+                next=Math.floor(Math.random()*musicState.playlist.length);
+            }else{
+                next=(musicState.currentIdx+1)%musicState.playlist.length;
+            }
+            playTrack(next);
+        }
+        function prevTrack(){
+            if(musicState.playlist.length===0)return;
+            if(audioEl&&audioEl.currentTime>3){audioEl.currentTime=0;return;}
+            let prev;
+            if(musicState.shuffle){
+                prev=Math.floor(Math.random()*musicState.playlist.length);
+            }else{
+                prev=(musicState.currentIdx-1+musicState.playlist.length)%musicState.playlist.length;
+            }
+            playTrack(prev);
+        }
+        function onTrackEnd(){
+            if(musicState.repeat==='one'){
+                audioEl.currentTime=0;
+                audioEl.play();
+            }else if(musicState.repeat==='all'||musicState.currentIdx<musicState.playlist.length-1){
+                nextTrack();
+            }else{
+                musicState.isPlaying=false;
+                updatePlayButton();
+                updatePlayerDisplay();
+                stopVisualizer();
+            }
+        }
+        function toggleShuffle(){
+            musicState.shuffle=!musicState.shuffle;
+            showToast(musicState.shuffle?'🔀 Aleatório ativado':'🔀 Aleatório desativado');
+            updatePlaylistUI();
+        }
+        function toggleRepeat(){
+            const modes=['none','all','one'];
+            const idx=modes.indexOf(musicState.repeat);
+            musicState.repeat=modes[(idx+1)%modes.length];
+            const labels={none:'🔁 Repetir desativado',all:'🔁 Repetir tudo',one:'🔂 Repetir uma'};
+            showToast(labels[musicState.repeat]);
+            updatePlaylistUI();
+        }
+        function setVolume(v){
+            musicState.volume=Math.max(0,Math.min(1,v));
+            if(audioEl)audioEl.volume=musicState.volume;
+            const slider=document.getElementById('volumeSlider');
+            if(slider)slider.value=Math.round(musicState.volume*100);
+            const val=document.getElementById('volValue');
+            if(val)val.textContent=Math.round(musicState.volume*100)+'%';
+            const icon=document.querySelector('.vol-icon');
+            if(icon)icon.textContent=musicState.volume===0?'🔇':musicState.volume<0.5?'🔉':'🔊';
+            saveMusicState();
+        }
+        function toggleMute(){setVolume(musicState.volume>0?0:0.7);}
+        function seekMusic(e){
+            if(!audioEl||!audioEl.duration)return;
+            const bar=document.getElementById('progressBar');
+            const rect=bar.getBoundingClientRect();
+            const pct=(e.clientX-rect.left)/rect.width;
+            audioEl.currentTime=pct*audioEl.duration;
+        }
+        function updateProgress(){
+            if(!audioEl||!audioEl.duration)return;
+            const pct=(audioEl.currentTime/audioEl.duration)*100;
+            const fill=document.getElementById('progressFill');
+            if(fill)fill.style.width=pct+'%';
+            const ct=document.getElementById('currentTime');
+            if(ct)ct.textContent=formatTime(audioEl.currentTime);
+        }
+        function updatePlayButton(){
+            const btn=document.getElementById('playBtn');
+            if(btn)btn.textContent=musicState.isPlaying?'⏸️':'▶️';
+            const section=document.getElementById('playerSection');
+            if(section)section.classList.toggle('playing',musicState.isPlaying);
+            const disc=document.getElementById('playerDisc');
+            if(disc)disc.classList.toggle('spinning',musicState.isPlaying);
+        }
+        function updatePlayerDisplay(){
+            const nameEl=document.getElementById('trackNameDisplay');
+            const artistEl=document.getElementById('trackArtistDisplay');
+            if(musicState.currentIdx>=0&&musicState.playlist[musicState.currentIdx]){
+                const track=musicState.playlist[musicState.currentIdx];
+                if(nameEl)nameEl.textContent=track.name||'Sem nome';
+                if(artistEl)artistEl.textContent=track.type==='url'?'🔗 Reproduzindo da web':'📁 Arquivo local';
+            }else{
+                if(nameEl)nameEl.textContent='Nenhuma música';
+                if(artistEl)artistEl.textContent='Selecione uma faixa';
+            }
+        }
+        function updatePlaylistUI(){
+            const list=document.getElementById('playlistList');
+            if(!list)return;
+            const pl=musicState.playlist;
+            if(pl.length===0){
+                list.innerHTML=`<div class="playlist-empty"><div class="empty-icon">🎵</div><p>Sua playlist está vazia.<br>Adicione músicas por URL ou faça upload de arquivos de áudio!</p></div>`;
+                const header=list.parentElement.querySelector('.playlist-header h3');
+                if(header)header.textContent=`📜 Playlist (0)`;
+                return;
+            }
+            const header=list.parentElement.querySelector('.playlist-header h3');
+            if(header)header.textContent=`📜 Playlist (${pl.length})`;
+            list.innerHTML=pl.map((track,i)=>{
+                const isActive=i===musicState.currentIdx;
+                const isPlaying=isActive&&musicState.isPlaying;
+                return`<div class="playlist-item ${isActive?'active':''} ${isPlaying?'playing':''}" onclick="playTrack(${i})" data-idx="${i}">
+                    <span class="track-number">${isPlaying?'♪':(i+1)}</span>
+                    <div class="track-info">
+                        <div class="track-title">${escapeHTML(track.name||'Sem nome')}</div>
+                        <div class="track-meta">${track.type==='url'?'🔗 URL':'📁 Arquivo'}${track.duration?' • '+formatTime(track.duration):''}</div>
+                    </div>
+                    <span class="track-duration">${track.duration?formatTime(track.duration):'--:--'}</span>
+                    <div class="track-actions">
+                        <button onclick="event.stopPropagation();renameTrack(${i})" title="Renomear">✏️</button>
+                        <button class="del-btn" onclick="event.stopPropagation();removeTrack(${i})" title="Remover">🗑️</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        function renameTrack(idx){
+            const track=musicState.playlist[idx];
+            showPrompt('✏️ Renomear Faixa','Novo nome:',track.name,name=>{
+                if(!name||!name.trim())return;
+                track.name=name.trim();
+                saveMusicState();
+                updatePlaylistUI();
+                if(idx===musicState.currentIdx)updatePlayerDisplay();
+            });
+        }
+        function removeTrack(idx){
+            showConfirm(`Remover "${musicState.playlist[idx].name}" da playlist?`,()=>{
+                const wasPlaying=idx===musicState.currentIdx;
+                musicState.playlist.splice(idx,1);
+                if(wasPlaying){stopMusic();musicState.currentIdx=-1;}
+                else if(idx<musicState.currentIdx)musicState.currentIdx--;
+                saveMusicState();
+                updatePlaylistUI();
+                updatePlayerDisplay();
+                showToast('🗑️ Faixa removida!');
+            });
+        }
+        function clearPlaylist(){
+            if(musicState.playlist.length===0){showToast('📜 Playlist já está vazia');return;}
+            showConfirm('Limpar TODA a playlist?',()=>{
+                stopMusic();
+                musicState.playlist=[];
+                musicState.currentIdx=-1;
+                saveMusicState();
+                updatePlaylistUI();
+                updatePlayerDisplay();
+                showToast('🧹 Playlist limpa!');
+            });
+        }
+        function startVisualizer(){
+            stopVisualizer();
+            if(!musicState.isPlaying)return;
+            const bars=document.querySelectorAll('.viz-bar');
+            vizInterval=setInterval(()=>{
+                bars.forEach(bar=>{
+                    bar.classList.add('active');
+                    bar.style.setProperty('--h',(6+Math.random()*22)+'px');
+                });
+            },200);
+        }
+        function stopVisualizer(){
+            if(vizInterval){clearInterval(vizInterval);vizInterval=null;}
+            document.querySelectorAll('.viz-bar').forEach(bar=>bar.classList.remove('active'));
+        }
+        function formatTime(s){
+            if(!s||isNaN(s))return '0:00';
+            const m=Math.floor(s/60);
+            const sec=Math.floor(s%60);
+            return m+':'+(sec<10?'0':'')+sec;
+        }
+
+        // ══════════ SALVAR (criptografado) ═══════════
+        function markUnsaved(){hasUnsavedChanges=true;updateSaveStatus();clearTimeout(window._autoSaveTimer);window._autoSaveTimer=setTimeout(async()=>{await saveGrimoireData(appData);hasUnsavedChanges=false;updateSaveStatus();},1500);}
+        function updateSaveStatus(){const el=document.getElementById('saveStatus');if(hasUnsavedChanges){el.textContent=' 🔐 Salvando...';el.classList.remove('saved');}else{el.textContent='🔐 Tudo salvo';el.classList.add('saved');}}
+        async function saveCurrentCharacter(){await saveGrimoireData(appData);hasUnsavedChanges=false;updateSaveStatus();showToast('🔐 Personagem salvo com segurança!');}
         function clearCurrentCategory(){
             const ch=getCurrentChar();const sheetTabIds=SHEET_TABS.map(t=>t.id);
             if(activeTab==='ficha'){showConfirm('Limpar TODA a ficha?',()=>{ch.sheet=initSheet();ch.ficha={};markUnsaved();renderPanels();});return;}
             if(activeTab==='dados'){showConfirm('Limpar histórico de rolagens?',()=>{clearDiceHistory();});return;}
+            if(activeTab==='musicas'){showConfirm('Limpar TODA a playlist?',()=>{stopMusic();musicState.playlist=[];musicState.currentIdx=-1;saveMusicState();renderPanels();});return;}
             if(sheetTabIds.includes(activeTab)){showConfirm(`Limpar aba "${ALL_TABS.find(t=>t.id===activeTab)?.name}"?`,()=>{showToast('✅ Use a aba Ficha para gerenciar dados.');});return;}
             const cat=CATEGORIES.find(c=>c.id===activeTab);
             showConfirm(`Apagar imagens, mensagens e anotações de "${cat?.name}"?`,()=>{ch.images[activeTab]=[];if(ch.messages)ch.messages[activeTab]=[];ch.notes[activeTab]='';markUnsaved();renderPanels();});
         }
-        function switchCharacter(charId){if(!appData.characters[charId])return;activeCharId=charId;appData.activeId=charId;saveGrimoireData(appData);activeTab='atributos';renderAllGrimoire();}
-        function openNewCharModal(){showPrompt('➕ Novo Personagem','Nome do personagem:','Novo Personagem',name=>{if(!name||!name.trim())return;const id='char_'+Date.now();appData.characters[id]=createEmptyCharacter(name.trim());activeCharId=id;appData.activeId=id;saveGrimoireData(appData);activeTab='atributos';renderAllGrimoire();showToast('✅ Personagem criado!');});}
-        function renameCharacter(){const ch=getCurrentChar();showPrompt('✏️ Renomear','Novo nome:',ch.name,name=>{if(!name||!name.trim())return;ch.name=name.trim();saveGrimoireData(appData);renderCharSelector();showToast('✅ Renomeado!');});}
-        function deleteCharacter(){if(Object.keys(appData.characters).length<=1){showToast('⚠️ Deve haver pelo menos 1 personagem!');return;}showConfirm(`Excluir "${getCurrentChar().name}"?`,()=>{delete appData.characters[activeCharId];activeCharId=Object.keys(appData.characters)[0];appData.activeId=activeCharId;saveGrimoireData(appData);activeTab='atributos';renderAllGrimoire();showToast('️ Excluído');});}
+        async function switchCharacter(charId){if(!appData.characters[charId])return;stopMusic();activeCharId=charId;appData.activeId=charId;await saveGrimoireData(appData);activeTab='atributos';loadMusicState();renderAllGrimoire();}
+        async function openNewCharModal(){showPrompt('➕ Novo Personagem','Nome do personagem:','Novo Personagem',async name=>{if(!name||!name.trim())return;const id='char_'+Date.now();appData.characters[id]=createEmptyCharacter(name.trim());activeCharId=id;appData.activeId=id;await saveGrimoireData(appData);activeTab='atributos';renderAllGrimoire();showToast('✅ Personagem criado!');});}
+        async function renameCharacter(){const ch=getCurrentChar();showPrompt('✏️ Renomear','Novo nome:',ch.name,async name=>{if(!name||!name.trim())return;ch.name=name.trim();await saveGrimoireData(appData);renderCharSelector();showToast('✅ Renomeado!');});}
+        async function deleteCharacter(){if(Object.keys(appData.characters).length<=1){showToast('⚠️ Deve haver pelo menos 1 personagem!');return;}showConfirm(`Excluir "${getCurrentChar().name}"?`,async()=>{delete appData.characters[activeCharId];activeCharId=Object.keys(appData.characters)[0];appData.activeId=activeCharId;await saveGrimoireData(appData);activeTab='atributos';renderAllGrimoire();showToast('️ Excluído');});}
         function exportAll(){const ch=getCurrentChar();const blob=new Blob([JSON.stringify({version:5,character:ch,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`grimorio-${(ch.name||'personagem').replace(/[^a-zA-Z0-9]/g,'_')}-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(url);showToast('📤 Exportado!');}
         function triggerImport(){showConfirm('Importar substituirá o personagem atual.',()=>document.getElementById('hiddenImportInput').click());}
-        function handleImport(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const imp=JSON.parse(r.result),cd=imp.character||imp;if(!cd.name)throw new Error('Inválido');if(!cd.ficha)cd.ficha={};if(!cd.notes)cd.notes={};if(!cd.images)cd.images={};if(!cd.messages)cd.messages={};if(!cd.sheet)cd.sheet=initSheet();CATEGORIES.forEach(c=>{if(!cd.images[c.id])cd.images[c.id]=[];if(!cd.messages[c.id])cd.messages[c.id]=[];});const id='char_'+Date.now();appData.characters[id]=cd;activeCharId=id;appData.activeId=id;saveGrimoireData(appData);activeTab='atributos';renderAllGrimoire();showToast('📥 Importado!');}catch{alert('❌ Arquivo inválido!');}};r.readAsText(f);e.target.value='';}
+        async function handleImport(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{try{const imp=JSON.parse(r.result),cd=imp.character||imp;if(!cd.name)throw new Error('Inválido');if(!cd.ficha)cd.ficha={};if(!cd.notes)cd.notes={};if(!cd.images)cd.images={};if(!cd.messages)cd.messages={};if(!cd.music)cd.music={playlist:[],volume:0.7};if(!cd.sheet)cd.sheet=initSheet();CATEGORIES.forEach(c=>{if(!cd.images[c.id])cd.images[c.id]=[];if(!cd.messages[c.id])cd.messages[c.id]=[];});const id='char_'+Date.now();appData.characters[id]=cd;activeCharId=id;appData.activeId=id;await saveGrimoireData(appData);activeTab='atributos';renderAllGrimoire();showToast('📥 Importado!');}catch{alert('❌ Arquivo inválido!');}};r.readAsText(f);e.target.value='';}
 
-        // ═══════════ MODAL ═══════════
         function showConfirm(msg,onYes){document.getElementById('modalTitle').textContent='⚠️ Confirmar';document.getElementById('modalMsg').textContent=msg;document.getElementById('modalMsg').style.display='block';document.getElementById('modalInput').style.display='none';document.getElementById('genericModal').classList.remove('hidden');modalCallback=onYes;}
         function showPrompt(title,msg,defV,onYes){document.getElementById('modalTitle').textContent=title;document.getElementById('modalMsg').textContent=msg;document.getElementById('modalMsg').style.display='block';const inp=document.getElementById('modalInput');inp.style.display='block';inp.value=defV||'';document.getElementById('genericModal').classList.remove('hidden');setTimeout(()=>{inp.focus();inp.select();},50);modalCallback=(v)=>onYes(v);}
         document.getElementById('modalYes').onclick=()=>{const inp=document.getElementById('modalInput');const v=inp.style.display==='none'?true:inp.value;document.getElementById('genericModal').classList.add('hidden');if(modalCallback)modalCallback(v);modalCallback=null;};
@@ -823,7 +1352,6 @@
         function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.classList.remove('show'),2500);}
         document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLightbox();closeMsgModal();document.getElementById('genericModal').classList.add('hidden');document.getElementById('themeModal').classList.add('hidden');modalCallback=null;}});
 
-        // ══════════ 🎲 DADOS ═══════════
         function selectDiceType(sides){diceState.selectedType=sides;document.querySelectorAll('.dice-type-btn').forEach(b=>{b.classList.toggle('selected',b.textContent.includes('D'+sides));});const rb=document.getElementById('diceRollBtn');if(rb)rb.innerHTML=`🎲 Rolar D${sides}`;}
         function changeDiceQty(d){setDiceQty(Math.max(1,Math.min(20,diceState.quantity+d)));}
         function setDiceQty(v){const q=Math.max(1,Math.min(20,parseInt(v)||1));diceState.quantity=q;const el=document.getElementById('diceQty');if(el)el.value=q;}
@@ -839,237 +1367,28 @@
         function clearDiceHistory(){diceState.history=[];renderDiceHistory();showToast('🧹 Histórico limpo!');}
         document.addEventListener('keydown',e=>{if(e.code==='Space'&&activeTab==='dados'&&!e.target.matches('input,textarea,select,button')){e.preventDefault();rollDice();}});
 
-        // ═══════════════════════ 📄 EXPORTAÇÃO PDF ═══════════════════════
-        function exportPDF(){
-            const ch = getCurrentChar();
-            if (!ch) { showToast('⚠️ Nenhum personagem ativo!'); return; }
-            const s = ensureSheet(ch);
-            const pb = parseInt((s.combat.prof || '+2').replace(/[^\\-\\d]/g, '')) || 2;
-
-            const esc = (v) => String(v || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-            const modFn = (v) => { const n = parseInt(v); return isNaN(n) ? null : Math.floor((n - 10) / 2); };
-            const modStr = (v) => { const m = modFn(v); if (m === null) return '-'; return (m >= 0 ? '+' : '') + m; };
-
-            // ATRIBUTOS
-            let attrsHTML = '<div class="pdf-attrs">';
-            ATTRS.forEach(a => {
-                const val = s.attrs[a.id] || a.def;
-                attrsHTML += `<div class="pdf-attr-box"><div class="attr-name">${a.name}</div><div class="attr-val">${esc(val)}</div><div class="attr-mod">${modStr(val)}</div></div>`;
-            });
-            attrsHTML += '</div>';
-
-            // SALVAGUARDAS
-            let savesHTML = '';
-            SAVES_NAMES.forEach((sn, i) => {
-                const aid = ATTRS[i].id, m = modFn(s.attrs[aid] || ATTRS[i].def) || 0;
-                const prof = s.skills['save_' + sn] || false;
-                const total = prof ? m + pb : m;
-                savesHTML += `<tr><td>${sn} (${ATTRS[i].abbr})</td><td>${prof ? '✅' : '—'}</td><td>${(total >= 0 ? '+' : '') + total}</td></tr>`;
-            });
-
-            // PERÍCIAS
-            let skillsHTML = '';
-            SKILLS_LIST.forEach(sk => {
-                const a = ATTRS.find(x => x.id === sk.attr);
-                const m = modFn(s.attrs[sk.attr] || (a ? a.def : '10')) || 0;
-                const prof = s.skills[sk.name] || false;
-                const total = prof ? m + pb : m;
-                skillsHTML += `<tr><td>${sk.name}</td><td>${a ? a.abbr : ''}</td><td>${prof ? '✅' : '—'}</td><td>${(total >= 0 ? '+' : '') + total}</td></tr>`;
-            });
-
-            // STATUS DE COMBATE
-            const sc = s.combat;
-            const combatFields = [
-                { l: 'CA', v: sc.ca || '-' },
-                { l: 'Iniciativa', v: sc.iniciativa || '-' },
-                { l: 'Deslocamento', v: sc.desloc || '-' },
-                { l: 'Nível', v: sc.nivel || '-' },
-                { l: 'XP', v: sc.xp || '-' },
-                { l: 'Proficiência', v: sc.prof || '+2' },
-                { l: 'Testes de Morte', v: sc.deathSaves || '-' },
-            ];
-            let combatHTML = `<p><strong>PV:</strong> ${sc.hpCur || 0}/${sc.hpMax || 0} (Temp: ${sc.hpTemp || 0})</p><div class="pdf-row">`;
-            combatFields.forEach(cf => { combatHTML += `<div class="pdf-field"><strong>${cf.l}</strong><span>${esc(cf.v)}</span></div>`; });
-            combatHTML += '</div>';
-
-            // INFORMAÇÕES BÁSICAS
-            const fi = ch.ficha || {};
-            const infoFields = [
-                { l: 'Nome', v: fi.nome || ch.name || '-' },
-                { l: 'Classe', v: fi.classe || '-' },
-                { l: 'Raça', v: fi.raca || '-' },
-                { l: 'Antecedente', v: fi.antecedente || '-' },
-                { l: 'Alinhamento', v: fi.alinhamento || '-' },
-                { l: 'Jogador', v: fi.jogador || '-' },
-            ];
-            let infoHTML = '<div class="pdf-row">';
-            infoFields.forEach(f => { infoHTML += `<div class="pdf-field"><strong>${f.l}</strong><span>${esc(f.v)}</span></div>`; });
-            infoHTML += '</div>';
-
-            // RESISTÊNCIAS
-            const resistFields = [
-                { l: 'Resistências', v: sc.resist },
-                { l: 'Imunidades', v: sc.imun },
-                { l: 'Vulnerabilidades', v: sc.vuln },
-                { l: 'Idiomas', v: sc.idiomas },
-            ];
-            let resistHTML = '<div class="pdf-row">';
-            resistFields.forEach(r => { resistHTML += `<div class="pdf-field"><strong>${r.l}</strong><span>${esc(r.v) || '—'}</span></div>`; });
-            resistHTML += '</div>';
-
-            // MOEDAS
-            const coins = [
-                { l: 'PO (Ouro)', v: sc.ouro },
-                { l: 'PP (Prata)', v: sc.prata },
-                { l: 'PE (Electro)', v: sc.electro },
-                { l: 'PC (Cobre)', v: sc.cobre },
-                { l: 'PL (Platina)', v: sc.platina },
-            ];
-            let coinsHTML = '<div class="pdf-row">';
-            coins.forEach(c => { coinsHTML += `<div class="pdf-field"><strong>${c.l}</strong><span>${esc(c.v) || '0'}</span></div>`; });
-            coinsHTML += '</div>';
-
-            // ATAQUES
-            let attacksHTML = '';
-            if ((s.attacks || []).length > 0) {
-                attacksHTML = '<table class="pdf-table"><tr><th>Ataque</th><th>Bônus</th><th>Dano</th></tr>';
-                s.attacks.forEach(a => { attacksHTML += `<tr><td>${esc(a.name) || '—'}</td><td>${esc(a.bonus) || '—'}</td><td>${esc(a.dmg) || '—'}</td></tr>`; });
-                attacksHTML += '</table>';
-            } else { attacksHTML = '<p style="color:#999;font-style:italic;">Nenhum ataque registrado.</p>'; }
-
-            // MAGIAS
-            let spellsHTML = '';
-            const filledSlots = SLOT_LEVELS.filter(l => s.slots[l]);
-            if (filledSlots.length > 0) {
-                spellsHTML += '<div class="pdf-row">';
-                filledSlots.forEach(l => { spellsHTML += `<div class="pdf-field"><strong>${l} Nível</strong><span>${esc(s.slots[l])}</span></div>`; });
-                spellsHTML += '</div>';
-            }
-            if ((s.spells || []).length > 0) {
-                spellsHTML += '<table class="pdf-table"><tr><th>#</th><th>Magia</th></tr>';
-                s.spells.forEach((sp, i) => { if (sp) spellsHTML += `<tr><td>${i + 1}</td><td>${esc(sp)}</td></tr>`; });
-                spellsHTML += '</table>';
-            }
-            if (!filledSlots.length && !(s.spells || []).filter(x => x).length) {
-                spellsHTML += '<p style="color:#999;font-style:italic;">Nenhuma magia registrada.</p>';
-            }
-
-            // EQUIPAMENTOS
-            let equipsHTML = '';
-            if ((s.equips || []).filter(x => x).length > 0) {
-                equipsHTML = '<ul>';
-                s.equips.forEach(e => { if (e) equipsHTML += `<li>${esc(e)}</li>`; });
-                equipsHTML += '</ul>';
-            } else { equipsHTML = '<p style="color:#999;font-style:italic;">Nenhum equipamento registrado.</p>'; }
-
-            // TRAÇOS
-            let traitsHTML = '';
-            if ((s.traits || []).filter(x => x).length > 0) {
-                traitsHTML = '<ul>';
-                s.traits.forEach(t => { if (t) traitsHTML += `<li>${esc(t)}</li>`; });
-                traitsHTML += '</ul>';
-            } else { traitsHTML = '<p style="color:#999;font-style:italic;">Nenhum traço registrado.</p>'; }
-
-            // NOTAS DA CAMPANHA
-            const campNotes = s.notes ? `<div class="pdf-note">${esc(s.notes)}</div>` : '';
-
-            // GALERIAS
-            let galleryHTML = '';
-            CATEGORIES.forEach(cat => {
-                const imgs = ch.images[cat.id] || [];
-                const note = ch.notes[cat.id] || '';
-                const msgs = ch.messages?.[cat.id] || [];
-                const hasContent = imgs.length > 0 || note || msgs.some(m => m && m.length > 0);
-                if (!hasContent) return;
-
-                galleryHTML += `<div class="pdf-section"><h2>${cat.icon} ${cat.name}</h2>`;
-                if (imgs.length > 0) {
-                    imgs.forEach((img, idx) => {
-                        const src = typeof img === 'string' ? img : img.src;
-                        const caption = typeof img === 'string' ? '' : (img.caption || '');
-                        galleryHTML += `<div class="pdf-gallery-item"><img src="${src}" alt="${cat.name}"><div class="pdf-caption">${esc(caption) || '—'}</div></div>`;
-                        if (cat.id === 'divulgacoes' && msgs[idx] && msgs[idx].length > 0) {
-                            galleryHTML += '<div style="margin-left:8px;font-size:10px;">';
-                            msgs[idx].forEach(m => {
-                                const time = new Date(m.ts).toLocaleString('pt-BR');
-                                galleryHTML += `<div class="pdf-msg-item"><span class="msg-author">${esc(m.author || 'Anônimo')}</span> (${time}): ${esc(m.text)}</div>`;
-                            });
-                            galleryHTML += '</div>';
-                        }
-                    });
-                }
-                if (note.trim()) {
-                    galleryHTML += `<div class="pdf-note">${esc(note)}</div>`;
-                }
-                galleryHTML += '</div>';
-            });
-
-            // MONTAGEM COMPLETA
-            const pdfHTML = `
-                <div class="pdf-header">
-                    <h1>⚔️ ${esc(ch.name || 'Personagem')}</h1>
-                    <div class="pdf-subtitle">Grimório do Personagem — Exportado em ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
-                </div>
-                <div class="pdf-section"><h2>📜 Informações Básicas</h2>${infoHTML}</div>
-                <div class="pdf-section"><h2>🧬 Atributos</h2>${attrsHTML}</div>
-                <div class="pdf-section"><h2>⚔️ Status de Combate</h2>${combatHTML}</div>
-                <div class="pdf-section"><h2>🛡️ Salvaguardas</h2>
-                    <table class="pdf-table"><tr><th>Salvaguarda</th><th>Prof.</th><th>Total</th></tr>${savesHTML}</table>
-                </div>
-                <div class="pdf-section"><h2>🎯 Perícias</h2>
-                    <table class="pdf-table"><tr><th>Perícia</th><th>Attr</th><th>Prof.</th><th>Total</th></tr>${skillsHTML}</table>
-                </div>
-                <div class="pdf-section"><h2>⚔️ Ataques & Ações</h2>${attacksHTML}</div>
-                <div class="pdf-section"><h2>🔮 Magias</h2>${spellsHTML}</div>
-                <div class="pdf-section"><h2>🎒 Equipamentos</h2>${equipsHTML}</div>
-                <div class="pdf-section"><h2>💰 Moedas</h2>${coinsHTML}</div>
-                <div class="pdf-section"><h2>🌟 Traços & Habilidades</h2>${traitsHTML}</div>
-                <div class="pdf-section"><h2>🔰 Resistências & Outros</h2>${resistHTML}</div>
-                ${campNotes ? `<div class="pdf-section"><h2>📝 Notas da Campanha</h2>${campNotes}</div>` : ''}
-                ${galleryHTML}
-                <div class="pdf-footer">
-                    Grimório do Personagem — MyHub Nitro &copy; ${new Date().getFullYear()} — Documento gerado automaticamente.
-                </div>
-            `;
-
-            // RENDERIZAR E BAIXAR
-            const container = document.getElementById('pdfExportContainer');
-            container.innerHTML = pdfHTML;
-
-            const opt = {
-                margin: [8, 10, 8, 10],
-                filename: `grimorio-${(ch.name || 'personagem').replace(/[^a-zA-Z0-9]/g, '_')}-${new Date().toISOString().slice(0, 10)}.pdf`,
-                image: { type: 'jpeg', quality: 0.95 },
-                html2canvas: {
-                    scale: 2,
-                    useCORS: true,
-                    allowTaint: true,
-                    logging: false,
-                },
-                jsPDF: {
-                    unit: 'mm',
-                    format: 'a4',
-                    orientation: 'portrait'
-                },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-            };
-
-            showToast('📄 Gerando PDF...');
-
-            html2pdf().set(opt).from(container).save().then(() => {
-                container.innerHTML = '';
-                showToast('✅ PDF exportado com sucesso!');
-            }).catch((err) => {
-                console.error(err);
-                container.innerHTML = '';
-                showToast('❌ Erro ao gerar PDF.');
-            });
-        }
-
         // ═══════════ INIT ══════════
         setupAgeGate();
-        const session=getSession(),ageVerified=localStorage.getItem(AGE_KEY);
-        if(session&&ageVerified){document.getElementById('loggedUserName').textContent=session.name;applySavedBackground();initGrimoire();showStage('stageGrimoire');}else if(ageVerified){showStage('stageAuth');}
+        (async()=>{
+            const session=getSession(),ageVerified=localStorage.getItem(AGE_KEY);
+            if(session&&ageVerified){
+                try{
+                    const decrypted=await CRYPTO.decrypt(session.enc,getUserPassphrase(session.email));
+                    const userData=JSON.parse(decrypted);
+                    currentUserPassphrase=getUserPassphrase(session.email);
+                    document.getElementById('loggedUserName').textContent=userData.name;
+                    applySavedBackground();
+                    await initGrimoire();
+                    showStage('stageGrimoire');
+                }catch(e){
+                    console.warn('Sessão inválida, fazendo login novamente');
+                    clearSession();
+                    showStage('stageAuth');
+                }
+            }else if(ageVerified){
+                showStage('stageAuth');
+            }
+        })();
         window.addEventListener('beforeunload',e=>{if(hasUnsavedChanges){e.preventDefault();e.returnValue='';}});
     </script>
 </body>
