@@ -27,3 +27,111 @@ div[class*="dialog"] * {
     max-width: 100% !important;
     box-sizing: border-box !important;
 }
+
+/* ═══════ Toggle Mestre/Jogador ═══════ */
+.role-toggle {
+    display: inline-flex;
+    background: rgba(10,14,39,0.6);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    padding: 4px;
+    margin: 0 12px;
+    gap: 2px;
+}
+.role-toggle button {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 6px 14px;
+    border-radius: 24px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.role-toggle button:hover { color: var(--text); }
+.role-toggle button.active-mestre {
+    background: linear-gradient(135deg, #d4af37, #8b6914);
+    color: #1a0a00;
+    box-shadow: 0 0 12px rgba(212,175,55,0.5);
+}
+.role-toggle button.active-jogador {
+    background: linear-gradient(135deg, var(--gold), #6a3f8f);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(155,111,199,0.5);
+}
+
+/* Header muda conforme o modo */
+body.modo-mestre .site-header {
+    background: linear-gradient(135deg, rgba(60,40,10,0.95), rgba(120,80,20,0.7));
+    border-color: #d4af37;
+    box-shadow: 0 0 20px rgba(212,175,55,0.3);
+}
+body.modo-jogador .site-header {
+    background: linear-gradient(135deg, rgba(61,31,92,0.95), rgba(21,28,66,0.85));
+    border-color: var(--gold);
+}
+
+/* Botão de modo ativo (Mestre/Jogador) */
+#btnMestre.ativo, #btnJogador.ativo {
+    background: linear-gradient(135deg, var(--gold), #6a3f8f) !important;
+    color: #fff !important;
+    box-shadow: 0 0 12px rgba(155,111,199,0.5);
+    border-color: var(--gold-light);
+}
+body.modo-mestre .site-header {
+    background: linear-gradient(135deg, rgba(60,40,10,0.95), rgba(120,80,20,0.7));
+    border-color: #d4af37;
+}
+body.modo-jogador .site-header {
+    background: linear-gradient(135deg, rgba(61,31,92,0.95), rgba(21,28,66,0.85));
+    border-color: var(--gold);
+}
+
+.mini-panel {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+}
+.mini-panel h4 { margin-bottom: 8px; color: var(--gold-light); }
+.gen-result {
+    background: var(--input-bg);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    margin: 8px 0;
+    min-height: 44px;
+    font-style: italic;
+    color: var(--text-muted);
+}
+.item-card {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.item-card strong { color: var(--gold-light); }
+.item-card small { color: var(--text-muted); display:block; }
+
+#btnMestre.ativo {
+  background: #2d1a3d !important;
+  border-color: #f0c040 !important;
+  color: #f0c040 !important;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+}
+
+#btnJogador.ativo {
+  background: #1a2433 !important;
+  border-color: #a0b8e0 !important;
+  color: #a0b8e0 !important;
+  box-shadow: 0 0 12px rgba(139, 157, 195, 0.3);
+}
